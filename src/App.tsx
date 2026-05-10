@@ -230,7 +230,7 @@ const BottomNavItem = ({ href, icon, label, active, onClick }: { href: string; i
     whileTap={{ scale: 0.95 }}
     className={cn(
       "relative flex flex-col items-center justify-center gap-1 transition-all duration-500 flex-shrink-0 group py-2 w-24 h-[72px]",
-      active ? "text-black" : "text-slate-400 hover:text-slate-200"
+      active ? "text-black font-black" : "text-white/90 hover:text-white"
     )}
   >
     {active && (
