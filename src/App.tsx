@@ -26,10 +26,15 @@ import {
   LayoutDashboard,
   Home,
   MessageSquare,
-  Bell
+  Bell,
+  X,
+  Send,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import GlassCard from '@/src/components/ui/GlassCard';
 import { cn } from '@/src/lib/utils';
+import { getGeminiResponse } from '@/src/services/geminiService';
 import { 
   AreaChart, 
   Area, 
@@ -77,19 +82,52 @@ const STAFF_PERFORMANCE = [
   { name: 'Andi Wijaya', speed: 5.8, color: '#8b5cf6' },
 ];
 
+const MOCK_INSTITUTIONS = [
+  { 
+    id: 'inst-1', 
+    name: 'Puskesmas Kecamatan Gambir', 
+    type: 'Kesehatan',
+    address: 'Jl. Tanah Abang I No.10, Jakarta Pusat',
+    distance: '0.8 km',
+    services: ['Poli Umum', 'Poli Gigi', 'Vaksinasi', 'KIA'],
+    image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=400&q=80'
+  },
+  { 
+    id: 'inst-2', 
+    name: 'Bank BNI Cabang Jakarta', 
+    type: 'Perbankan',
+    address: 'Jl. Jend. Sudirman No.1, Jakarta Pusat',
+    distance: '1.2 km',
+    services: ['Customer Service', 'Teller', 'Pembukaan Rekening', 'Pinjaman'],
+    image: 'https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?auto=format&fit=crop&w=400&q=80'
+  },
+  { 
+    id: 'inst-3', 
+    name: 'Kantor Pajak Pratama', 
+    type: 'Pemerintahan',
+    address: 'Jl. Ridwan Rais No.5, Jakarta Pusat',
+    distance: '2.5 km',
+    services: ['Lapor SPT', 'Konsultasi Pajak', 'NPWP Baru', 'PBB'],
+    image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=400&q=80'
+  },
+];
+
 // --- Sub-components ---
 
-const Navbar = () => (
+const Navbar = ({ onOpenLogin }: { onOpenLogin: () => void }) => (
   <nav className="glass-nav fixed w-full z-50 px-6 py-4">
     <div className="max-w-7xl mx-auto flex justify-between items-center">
       <div className="flex items-center gap-2">
         <div className="w-10 h-10 bg-sky-600 rounded-xl flex items-center justify-center text-white shadow-lg">
           <Layers size={22} />
         </div>
-        <span className="text-xl font-bold tracking-tight">Smart<span className="text-sky-600">Queue</span></span>
+        <span className="text-xl font-bold tracking-tight text-slate-800">Smart<span className="text-sky-600">Queue</span></span>
       </div>
-      <button className="bg-sky-600 text-white px-6 py-2.5 rounded-full font-semibold btn-apple text-sm">
-        Mulai Sekarang
+      <button 
+        onClick={onOpenLogin}
+        className="bg-sky-600 text-white px-6 py-2.5 rounded-full font-semibold btn-apple text-sm"
+      >
+        Login Pengunjung
       </button>
     </div>
   </nav>
@@ -130,7 +168,7 @@ const Hero = () => (
   </section>
 );
 
-const BottomNav = () => {
+const BottomNav = ({ onOpenChat }: { onOpenChat: () => void }) => {
   const [active, setActive] = useState('#monitor');
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -169,7 +207,12 @@ const BottomNav = () => {
           <BottomNavItem 
             key={item.href}
             active={active === item.href}
-            onClick={() => setActive(item.href)}
+            onClick={() => {
+              setActive(item.href);
+              if (item.href === '#support') {
+                onOpenChat();
+              }
+            }}
             href={item.href}
             icon={item.icon}
             label={item.label}
@@ -219,6 +262,15 @@ export default function App() {
   const [lastCalled, setLastCalled] = useState<string | null>(null);
   const [queueStep, setQueueStep] = useState<'select' | 'ticket'>('select');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedInstitution, setSelectedInstitution] = useState<typeof MOCK_INSTITUTIONS[0] | null>(null);
+
+  const filteredInstitutions = MOCK_INSTITUTIONS.filter(inst => 
+    inst.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    inst.type.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleCallNext = () => {
     if (waitingList.length > 0) {
@@ -240,12 +292,128 @@ export default function App() {
 
   return (
     <div className="w-full" id="hero">
-      <Navbar />
+      <Navbar onOpenLogin={() => setIsLoginOpen(true)} />
       <Hero />
-      <BottomNav />
+      <BottomNav onOpenChat={() => setIsChatOpen(true)} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-12 md:py-24 pb-48 space-y-20 md:space-y-32">
         
+        {/* 0. Discovery Section (New) */}
+        <section id="discovery" className="scroll-mt-24 space-y-12">
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-sky-600 mb-2">Cari & Temukan</h2>
+            <h3 className="text-4xl font-extrabold text-slate-800 mb-6">Cari lokasi atau instansi yang ingin Anda kunjungi</h3>
+            <p className="text-slate-500 font-medium">Temukan lokasi terdekat, lihat layanan tersedia, dan ambil nomor antrean secara digital dari genggaman Anda.</p>
+          </div>
+
+          <div className="relative max-w-2xl mx-auto">
+            <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400">
+              <Search size={22} />
+            </div>
+            <input 
+              type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Cari Bank, Rumah Sakit, atau Kantor Pemerintah..." 
+              className="w-full h-16 pl-16 pr-6 bg-white rounded-3xl shadow-xl border border-slate-100 text-slate-700 font-bold focus:ring-4 focus:ring-sky-500/10 focus:outline-none transition-all placeholder:text-slate-300"
+            />
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <AnimatePresence mode="popLayout">
+              {filteredInstitutions.map((inst) => (
+                <motion.div
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  key={inst.id}
+                  onClick={() => setSelectedInstitution(inst)}
+                  className={cn(
+                    "group bg-white rounded-[32px] overflow-hidden border border-slate-100 shadow-lg hover:shadow-2xl transition-all cursor-pointer",
+                    selectedInstitution?.id === inst.id && "ring-4 ring-sky-500/20 border-sky-500"
+                  )}
+                >
+                  <div className="h-48 relative overflow-hidden">
+                    <img 
+                      src={inst.image} 
+                      alt={inst.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    />
+                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-sky-600 shadow-sm">
+                      {inst.distance}
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-center gap-2 mb-2">
+                       <span className="text-[10px] font-bold text-sky-600 uppercase tracking-widest bg-sky-50 px-2 py-0.5 rounded-md">
+                        {inst.type}
+                       </span>
+                    </div>
+                    <h4 className="text-xl font-extrabold text-slate-800 mb-2 leading-tight">{inst.name}</h4>
+                    <p className="text-xs text-slate-400 font-medium mb-4 flex items-center gap-1.5 line-clamp-1">
+                      <Search size={12} className="shrink-0" /> {inst.address}
+                    </p>
+                    
+                    <div className="flex flex-wrap gap-1.5 mt-auto">
+                      {inst.services.slice(0, 3).map(service => (
+                        <span key={service} className="text-[10px] font-bold bg-slate-50 text-slate-500 px-2.5 py-1 rounded-lg border border-slate-100">
+                          {service}
+                        </span>
+                      ))}
+                      {inst.services.length > 3 && (
+                        <span className="text-[10px] font-bold bg-slate-50 text-slate-400 px-2.5 py-1 rounded-lg border border-slate-100">
+                          +{inst.services.length - 3}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+
+          <AnimatePresence>
+            {selectedInstitution && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                className="bg-sky-600 rounded-[40px] p-8 md:p-12 text-white shadow-2xl relative overflow-hidden"
+              >
+                <div className="absolute top-8 right-8 cursor-pointer hover:bg-white/10 p-2 rounded-full transition-colors" onClick={() => setSelectedInstitution(null)}>
+                  <X size={24} />
+                </div>
+                <div className="relative z-10">
+                  <h3 className="text-xs font-black uppercase tracking-widest text-sky-200 mb-6">3. Pilih Jenis Layanan</h3>
+                  <h2 className="text-3xl font-black mb-8">Pilih layanan yang Anda perlukan di<br />{selectedInstitution.name}</h2>
+                  
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {selectedInstitution.services.map((service, idx) => (
+                      <motion.button
+                        key={service}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => {
+                          setSelectedCategory(service as any);
+                          setQueueStep('ticket');
+                          window.location.hash = '#customer';
+                        }}
+                        className="p-6 bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 text-left hover:bg-white hover:text-sky-600 transition-all group"
+                      >
+                        <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center mb-4 group-hover:bg-sky-100 group-hover:text-sky-600 transition-colors">
+                          {idx % 4 === 0 ? <Users size={20} /> : idx % 4 === 1 ? <User size={20} /> : idx % 4 === 2 ? <FastForward size={20} /> : <AlertCircle size={20} />}
+                        </div>
+                        <p className="font-extrabold text-sm uppercase tracking-wider">{service}</p>
+                        <p className="text-[10px] font-bold opacity-60 mt-1 uppercase">Estimasi 15 Menit</p>
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </section>
         {/* 1. Admin/Staff Section */}
         <section id="admin" className="scroll-mt-24">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
@@ -615,7 +783,10 @@ export default function App() {
                 <p className="text-sky-100 text-sm mb-8 leading-relaxed font-medium">
                   Butuh bantuan cepat? Hubungkan dengan asisten AI kami untuk menjawab kendala Anda dalam hitungan detik.
                 </p>
-                <button className="w-full py-4 bg-white text-sky-600 rounded-2xl font-black text-xs uppercase tracking-widest btn-apple shadow-xl">
+                <button 
+                  onClick={() => setIsChatOpen(true)}
+                  className="w-full py-4 bg-white text-sky-600 rounded-2xl font-black text-xs uppercase tracking-widest btn-apple shadow-xl"
+                >
                   Mulai Chat Sekarang
                 </button>
               </GlassCard>
@@ -644,6 +815,18 @@ export default function App() {
           </div>
         </section>
       </main>
+
+      <AnimatePresence>
+        {isChatOpen && (
+          <AIChatModal isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isLoginOpen && (
+          <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
+        )}
+      </AnimatePresence>
 
       {/* Footer */}
       <footer className="glass-nav py-16 text-center mt-20">
@@ -693,3 +876,234 @@ const NotificationIcon = ({ isActive }: { isActive: boolean }) => (
     </motion.div>
   </div>
 );
+
+const AIChatModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
+  const [messages, setMessages] = useState([
+    { role: 'assistant', content: 'Halo! Saya asisten Smart Queue. Ada yang bisa saya bantu terkait antrean Anda?' }
+  ]);
+  const [input, setInput] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+
+  const handleSend = async () => {
+    if (!input.trim() || isTyping) return;
+    
+    const userMessage = input.trim();
+    const newMessages = [...messages, { role: 'user', content: userMessage }];
+    setMessages(newMessages);
+    setInput('');
+    setIsTyping(true);
+    
+    const response = await getGeminiResponse(userMessage, messages as any);
+    
+    setMessages([...newMessages, { 
+      role: 'assistant', 
+      content: response 
+    }]);
+    setIsTyping(false);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+    >
+      <motion.div
+        initial={{ scale: 0.9, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.9, y: 20 }}
+        className="bg-white w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl flex flex-col h-[600px] border border-slate-100"
+      >
+        <div className="p-6 bg-sky-600 text-white flex justify-between items-center shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center border border-white/20">
+              <MessageSquare size={22} />
+            </div>
+            <div>
+              <p className="font-black text-sm tracking-tight">AI SUPPORT</p>
+              <div className="flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
+                <p className="text-[10px] font-bold text-sky-100 uppercase tracking-widest">Online Sekarang</p>
+              </div>
+            </div>
+          </div>
+          <button onClick={onClose} className="hover:bg-white/10 p-2 rounded-xl transition-colors">
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="flex-grow overflow-y-auto p-6 space-y-4 custom-scrollbar bg-slate-50/50">
+          {messages.map((msg, i) => (
+            <motion.div
+              initial={{ opacity: 0, x: msg.role === 'user' ? 10 : -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              key={i}
+              className={cn(
+                "flex flex-col max-w-[85%]",
+                msg.role === 'user' ? "ml-auto items-end" : "mr-auto items-start"
+              )}
+            >
+              <div className={cn(
+                "p-4 rounded-2xl text-sm font-medium shadow-sm",
+                msg.role === 'user' 
+                  ? "bg-sky-600 text-white rounded-br-none" 
+                  : "bg-white text-slate-700 border border-slate-100 rounded-bl-none"
+              )}>
+                {msg.content}
+              </div>
+              <span className="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-widest px-1">
+                {msg.role === 'assistant' ? 'Smart Bot' : 'Anda'}
+              </span>
+            </motion.div>
+          ))}
+          {isTyping && (
+            <div className="flex flex-col max-w-[85%] mr-auto items-start">
+              <div className="p-4 rounded-2xl bg-white text-slate-700 border border-slate-100 rounded-bl-none shadow-sm flex gap-1">
+                <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1, repeat: Infinity }} className="w-1.5 h-1.5 bg-slate-400 rounded-full" />
+                <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1, repeat: Infinity, delay: 0.2 }} className="w-1.5 h-1.5 bg-slate-400 rounded-full" />
+                <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1, repeat: Infinity, delay: 0.4 }} className="w-1.5 h-1.5 bg-slate-400 rounded-full" />
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="p-6 bg-white border-t border-slate-100">
+          <div className="relative flex items-center gap-2">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+              placeholder="Ketik pesan Anda..."
+              className="w-full h-12 bg-slate-50 rounded-2xl px-5 text-sm font-bold border border-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500/20 transition-all"
+            />
+            <button 
+              onClick={handleSend}
+              className="bg-sky-600 text-white w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-sky-500/20 active:scale-95 transition-all"
+            >
+              <Send size={18} />
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+const LoginModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
+  const [showPassword, setShowPassword] = useState(false);
+  const [view, setView] = useState<'login' | 'register'>('login');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    // Mocking an API call
+    setTimeout(() => {
+      setIsLoading(false);
+      onClose();
+      alert(view === 'login' ? 'Berhasil Masuk!' : 'Pendaftaran Berhasil!');
+    }, 1500);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-white/95 backdrop-blur-sm"
+    >
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        className="w-full max-w-sm flex flex-col items-center text-center relative"
+      >
+        <button 
+          onClick={onClose}
+          className="absolute -top-12 right-0 p-2 text-slate-400 hover:text-slate-600 transition-colors"
+        >
+          <X size={24} />
+        </button>
+
+        <h2 className="text-4xl font-black text-slate-900 mb-12">
+          {view === 'login' ? 'Masuk' : 'Daftar'}
+        </h2>
+
+        <form onSubmit={handleSubmit} className="w-full">
+          <div className="w-full space-y-4 mb-2">
+            <div className="relative">
+              <input 
+                required
+                type="text" 
+                placeholder="Email atau no. handphone" 
+                className="w-full h-14 px-5 border border-slate-300 rounded-lg text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 transition-all font-medium"
+              />
+            </div>
+            
+            <div className="relative">
+              <input 
+                required
+                type={showPassword ? "text" : "password"}
+                placeholder="Password" 
+                className="w-full h-14 px-5 border border-slate-300 rounded-lg text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 transition-all font-medium"
+              />
+              <button 
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+
+            {view === 'register' && (
+              <div className="relative">
+                <input 
+                  required
+                  type="password"
+                  placeholder="Konfirmasi Password" 
+                  className="w-full h-14 px-5 border border-slate-300 rounded-lg text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 transition-all font-medium"
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="w-full text-left mb-16">
+            {view === 'login' && (
+              <button type="button" className="text-sky-600 font-bold text-sm hover:underline">
+                Lupa password?
+              </button>
+            )}
+          </div>
+
+          <button 
+            disabled={isLoading}
+            className={cn(
+              "w-1/2 h-14 bg-[#007AFF] text-white rounded-[40px] font-bold text-sm tracking-wide shadow-lg shadow-blue-500/20 active:scale-95 transition-all mb-6 flex items-center justify-center mx-auto",
+              isLoading && "opacity-70 cursor-not-allowed"
+            )}
+          >
+            {isLoading ? (
+              <motion.div 
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
+              />
+            ) : (
+              view === 'login' ? 'Masuk' : 'Daftar'
+            )}
+          </button>
+        </form>
+
+        <button 
+          onClick={() => setView(view === 'login' ? 'register' : 'login')}
+          className="text-[#007AFF] font-bold text-sm hover:underline"
+        >
+          {view === 'login' ? 'Daftar akun' : 'Sudah punya akun? Masuk'}
+        </button>
+      </motion.div>
+    </motion.div>
+  );
+};
