@@ -6,6 +6,9 @@
 import React, { useState, useEffect, useRef, ReactNode } from 'react';
 import { motion, AnimatePresence, useScroll, useSpring } from 'motion/react';
 import { 
+  HelpCircle,
+  Search,
+  ExternalLink,
   Play, 
   RotateCcw, 
   FastForward, 
@@ -134,8 +137,8 @@ const BottomNav = () => {
   const items = [
     { href: '#hero', icon: <Home size={22} />, label: 'Beranda' },
     { href: '#monitor', icon: <Monitor size={22} />, label: 'Monitor' },
-    { href: '#analytics', icon: <BarChart3 size={22} />, label: 'Analitik' },
     { href: '#customer', icon: <QrCode size={22} />, label: 'Tiket' },
+    { href: '#support', icon: <HelpCircle size={22} />, label: 'Bantuan' },
   ];
 
   useEffect(() => {
@@ -183,8 +186,8 @@ const BottomNavItem = ({ href, icon, label, active, onClick }: { href: string; i
     onClick={onClick}
     whileTap={{ scale: 0.95 }}
     className={cn(
-      "relative flex flex-col items-center justify-center gap-1 transition-all duration-500 flex-shrink-0 group py-2 px-6 h-[72px]",
-      active ? "text-white" : "text-slate-400 hover:text-slate-200"
+      "relative flex flex-col items-center justify-center gap-1 transition-all duration-500 flex-shrink-0 group py-2 w-24 h-[72px]",
+      active ? "text-black" : "text-slate-400 hover:text-slate-200"
     )}
   >
     {active && (
@@ -437,88 +440,7 @@ export default function App() {
           </div>
         </section>
 
-        {/* 3. Analytics Section */}
-        <section id="analytics" className="scroll-mt-24">
-          <div className="flex items-center gap-2 mb-10">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-sky-600">Dashboard Analitik</h2>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-            {[
-              { label: 'Total Antrean', value: '148', icon: Users, color: 'sky', change: '+12% vs Kemarin' },
-              { label: 'Rata-rata Tunggu', value: '12m', icon: Clock, color: 'emerald', change: 'Optimal' },
-              { label: 'Kepuasan', value: '4.8', icon: CheckCircle2, color: 'amber', change: 'Bintang (230 ulasan)' },
-              { label: 'Efisiensi Staf', value: '92%', icon: TrendingUp, color: 'purple', change: '+5% Hari Ini' },
-            ].map((stat, i) => (
-              <GlassCard key={i} className="p-6 border-white/60" hover>
-                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-2">{stat.label}</p>
-                <div className="flex items-baseline gap-2">
-                  <p className="text-4xl font-black text-slate-800 tracking-tight">{stat.value}</p>
-                </div>
-                <p className={cn(
-                  "text-[10px] font-bold mt-2",
-                  stat.color === 'sky' ? "text-green-600" :
-                  stat.color === 'emerald' ? "text-blue-600" :
-                  stat.color === 'amber' ? "text-amber-500" :
-                  "text-purple-600"
-                )}>
-                  {stat.change}
-                </p>
-              </GlassCard>
-            ))}
-          </div>
-
-          <div className="grid lg:grid-cols-2 gap-8">
-            <GlassCard hover className="h-[450px] flex flex-col p-8 border-white/60">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-6">Grafik Jam Sibuk (Heatmap)</h3>
-              <div className="flex-grow flex items-end gap-3 px-4">
-                {[20, 45, 85, 100, 70, 40, 25].map((h, i) => (
-                  <div key={i} className="relative group flex-1">
-                    <motion.div 
-                      initial={{ height: 0 }}
-                      animate={{ height: `${h}%` }}
-                      transition={{ duration: 1, delay: i * 0.1 }}
-                      className={cn(
-                        "w-full rounded-t-xl transition-all shadow-md group-hover:brightness-110",
-                        h > 80 ? "bg-sky-700 shadow-sky-200" : "bg-sky-400"
-                      )} 
-                    />
-                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 text-white text-[10px] font-black px-2 py-1 rounded">
-                      {h}%
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="flex justify-between mt-6 text-[10px] font-black text-slate-400 uppercase tracking-widest border-t border-white/20 pt-4">
-                <span>08:00</span><span>10:00</span><span>12:00</span><span>14:00</span><span>16:00</span><span>18:00</span>
-              </div>
-            </GlassCard>
-
-            <GlassCard hover className="h-[450px] p-8 border-white/60">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-6">Efisiensi Loket</h3>
-              <div className="space-y-8">
-                {STAFF_PERFORMANCE.map((staff, i) => (
-                  <div key={i}>
-                    <div className="flex justify-between items-center mb-3">
-                      <span className="font-black text-slate-700 text-sm">{staff.name}</span>
-                      <span className="text-xs font-black text-sky-600">{staff.speed}m / person</span>
-                    </div>
-                    <div className="h-2.5 bg-white/50 rounded-full overflow-hidden border border-white/20 shadow-inner">
-                      <motion.div 
-                        initial={{ width: 0 }}
-                        animate={{ width: `${(10 / staff.speed) * 60}%` }}
-                        className="h-full rounded-full shadow-sm"
-                        style={{ backgroundColor: staff.color }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </GlassCard>
-          </div>
-        </section>
-
-        {/* 5. Area Pelanggan */}
+        {/* 3. Area Pelanggan */}
         <section id="customer" className="scroll-mt-24 max-w-lg mx-auto w-full">
           <h2 className="text-xs font-bold uppercase tracking-widest text-sky-600 mb-6 text-center">Pelayanan Mandiri</h2>
           
@@ -637,6 +559,89 @@ export default function App() {
               </motion.div>
             )}
           </AnimatePresence>
+        </section>
+
+        {/* 4. Pusat Bantuan (Support Center) */}
+        <section id="support" className="scroll-mt-24">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
+            <div>
+              <h2 className="text-xs font-bold uppercase tracking-widest text-sky-600 mb-2">Layanan Pelanggan</h2>
+              <h3 className="text-3xl font-extrabold text-slate-800">Pusat Bantuan & AI Support</h3>
+            </div>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* FAQ Search */}
+            <GlassCard className="lg:col-span-2 p-8 border-white/60" hover>
+              <h3 className="text-xl font-black text-slate-800 mb-6">Pertanyaan Populer</h3>
+              <div className="relative mb-8">
+                <input 
+                  type="text" 
+                  placeholder="Cari kendala Anda..." 
+                  className="w-full h-14 bg-white/50 backdrop-blur-md rounded-2xl px-12 text-sm font-medium border border-white/80 focus:outline-none focus:ring-2 focus:ring-sky-500/20 transition-all"
+                />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+              </div>
+              
+              <div className="space-y-4">
+                {[
+                  "Bagaimana cara membatalkan antrean?",
+                  "Dapatkah saya mengganti kategori layanan?",
+                  "Berapa lama rata-rata waktu tunggu?",
+                  "Apakah tiket saya akan hangus jika terlewati?"
+                ].map((q, i) => (
+                  <button 
+                    key={i}
+                    className="w-full flex items-center justify-between p-5 bg-white/40 hover:bg-white/60 rounded-2xl border border-white/60 transition-all group"
+                  >
+                    <span className="text-sm font-bold text-slate-700">{q}</span>
+                    <ChevronRight size={18} className="text-slate-300 group-hover:text-sky-600 transition-colors" />
+                  </button>
+                ))}
+              </div>
+
+              <div className="mt-8 flex items-center justify-center gap-2 text-sky-600 font-black text-xs uppercase tracking-widest cursor-pointer hover:underline">
+                Lihat Semua FAQ <ExternalLink size={14} />
+              </div>
+            </GlassCard>
+
+            {/* AI Assistant Chat Simulation */}
+            <div className="space-y-6">
+              <GlassCard className="p-8 bg-sky-600 text-white border-transparent shadow-sky-200" hover>
+                <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-6 border border-white/30">
+                  <MessageSquare size={24} />
+                </div>
+                <h3 className="text-xl font-black mb-2 tracking-tight">Smart AI Assistant</h3>
+                <p className="text-sky-100 text-sm mb-8 leading-relaxed font-medium">
+                  Butuh bantuan cepat? Hubungkan dengan asisten AI kami untuk menjawab kendala Anda dalam hitungan detik.
+                </p>
+                <button className="w-full py-4 bg-white text-sky-600 rounded-2xl font-black text-xs uppercase tracking-widest btn-apple shadow-xl">
+                  Mulai Chat Sekarang
+                </button>
+              </GlassCard>
+
+              <GlassCard className="p-8 border-white/60" hover>
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Butuh Manusia?</h4>
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="relative">
+                    <img 
+                      src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&h=100&q=80" 
+                      className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
+                      alt="Agent"
+                    />
+                    <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-black text-slate-800">Sarah Wijaya</p>
+                    <p className="text-[10px] text-slate-400 font-bold">Admin Beroperasi</p>
+                  </div>
+                </div>
+                <button className="w-full py-3 border-2 border-slate-100 text-slate-500 rounded-xl font-bold text-[11px] uppercase tracking-widest hover:bg-slate-50 transition-all">
+                  Hubungi Admin
+                </button>
+              </GlassCard>
+            </div>
+          </div>
         </section>
       </main>
 
