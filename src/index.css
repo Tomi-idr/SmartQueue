@@ -29,35 +29,47 @@
   }
 
   .liquid-nav-pill {
-    @apply bg-black/20 backdrop-blur-[60px] rounded-[4rem] p-1 flex items-center justify-around border border-white/10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.4)];
-    height: 84px;
+    @apply bg-black/20 backdrop-blur-[60px] rounded-[4rem] p-1 flex items-center justify-around border border-white/10 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)];
+    height: 72px;
   }
 
   .iridescent-bubble {
-    @apply absolute inset-0 rounded-[4rem];
-    background: none !important;
-    transform: scale(1.1);
+    @apply absolute -inset-x-2 -inset-y-1 sm:-inset-x-3 sm:-inset-y-1.5 rounded-full border border-white/20;
+    background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(12px);
     z-index: -1;
-    overflow: visible !important;
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.3),
+      inset 0 0 15px rgba(255, 255, 255, 0.2);
+    overflow: hidden;
   }
 
   .iridescent-bubble::before {
     content: '';
-    @apply absolute -inset-10 opacity-30 blur-3xl;
-    background: conic-gradient(
-      from 0deg, 
-      #ff4d4d, #ff944d, #ffff4d, #4dff4d, #4dffff, #4d4dff, #944dff, #ff4dff, #ff4d4d
+    @apply absolute -inset-[1px] rounded-full;
+    padding: 2px;
+    background: linear-gradient(
+      90deg,
+      #ff0055,
+      #ffaa00,
+      #00ffaa,
+      #0055ff,
+      #ff00ff,
+      #ff0055
     );
-    animation: rotate-iridescent 8s linear infinite;
-    mix-blend-mode: color-dodge;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.9;
+    filter: blur(0.5px) saturate(1.8);
   }
 
   .iridescent-bubble::after {
     content: '';
-    @apply absolute inset-0 bg-white/10 backdrop-blur-[20px] rounded-[4rem] border border-white/20;
-    box-shadow: 
-      inset 0 0 25px rgba(255, 255, 255, 0.2),
-      0 0 20px rgba(255, 255, 255, 0.1);
+    @apply absolute inset-0 rounded-full;
+    background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.4) 0%, transparent 70%);
+    opacity: 0.3;
   }
 }
 

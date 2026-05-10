@@ -125,7 +125,7 @@ const Navbar = ({ onOpenLogin }: { onOpenLogin: () => void }) => (
       </div>
       <button 
         onClick={onOpenLogin}
-        className="bg-sky-600 text-white px-6 py-2.5 rounded-full font-semibold btn-apple text-sm"
+        className="bg-sky-600 text-white px-4 py-1.5 rounded-full font-bold btn-apple text-[11px] shadow-md"
       >
         Login Pengunjung
       </button>
@@ -198,10 +198,10 @@ const BottomNav = ({ onOpenChat }: { onOpenChat: () => void }) => {
   }, []);
 
   return (
-    <nav className="fixed bottom-8 left-1/2 -translate-x-1/2 w-auto min-w-[320px] max-w-[95%] z-50">
+    <nav className="fixed bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 w-auto min-w-0 max-w-[95%] z-50">
       <div 
         ref={scrollRef}
-        className="liquid-nav-pill px-6 py-4 flex justify-center items-center gap-2 sm:gap-6 overflow-x-auto custom-scrollbar cursor-grab active:cursor-grabbing"
+        className="liquid-nav-pill px-3 py-2 sm:px-6 sm:py-4 flex justify-center items-center gap-1 sm:gap-6 overflow-x-auto custom-scrollbar cursor-grab active:cursor-grabbing"
       >
         {items.map((item) => (
           <BottomNavItem 
@@ -227,28 +227,28 @@ const BottomNavItem = ({ href, icon, label, active, onClick }: { href: string; i
   <motion.a 
     href={href} 
     onClick={onClick}
-    whileTap={{ scale: 0.95 }}
+    whileTap={{ scale: 0.92 }}
     className={cn(
-      "relative flex flex-col items-center justify-center gap-1 transition-all duration-500 flex-shrink-0 group py-2 w-24 h-[72px]",
-      active ? "text-black font-black" : "text-white/90 hover:text-white"
+      "relative flex flex-col items-center justify-center gap-0.5 transition-all duration-500 flex-shrink-0 group py-1 w-16 sm:w-20 h-12 sm:h-14",
+      active ? "text-slate-950 font-black" : "text-white hover:text-white/80"
     )}
   >
     {active && (
       <motion.div 
         layoutId="bubble"
         className="iridescent-bubble"
-        transition={{ type: "spring", bounce: 0.45, duration: 0.8 }}
+        transition={{ type: "spring", bounce: 0.3, duration: 0.5 }}
       />
     )}
     <div className={cn(
-      "relative z-10 transition-all duration-500",
-      active ? "scale-110 -translate-y-1" : "scale-100"
+      "relative z-10 transition-all duration-500 flex items-center justify-center",
+      active ? "scale-100 -translate-y-0.5" : "scale-90"
     )}>
-      {icon}
+      {React.cloneElement(icon as React.ReactElement, { size: active ? 20 : 18, strokeWidth: active ? 2.5 : 2 })}
     </div>
     <span className={cn(
-      "relative z-10 text-[9px] font-black uppercase tracking-[0.15em] transition-all duration-500",
-      active ? "opacity-100 scale-100 mt-1" : "opacity-0 scale-75 overflow-hidden h-0"
+      "relative z-10 text-[8px] sm:text-[9px] font-black uppercase tracking-wider transition-all duration-500",
+      active ? "opacity-100 scale-100 mt-0.5" : "opacity-0 scale-75 h-0 overflow-hidden"
     )}>
       {label}
     </span>
