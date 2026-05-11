@@ -34,20 +34,26 @@
   }
 
   .iridescent-bubble {
-    @apply absolute -inset-x-2 -inset-y-1 sm:-inset-x-3 sm:-inset-y-1.5 rounded-full border border-white/20;
-    background: rgba(255, 255, 255, 0.15) !important;
-    backdrop-filter: blur(12px);
+    @apply absolute -inset-x-2 -inset-y-1 sm:-inset-x-3 sm:-inset-y-1.5 rounded-full border border-white/30;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.2) 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      rgba(255, 255, 255, 0.1) 100%
+    ) !important;
+    backdrop-filter: blur(16px) saturate(1.5);
     z-index: -1;
     box-shadow: 
-      0 8px 32px rgba(0, 0, 0, 0.3),
-      inset 0 0 15px rgba(255, 255, 255, 0.2);
+      0 12px 40px rgba(0, 0, 0, 0.5),
+      inset 0 0 20px rgba(255, 255, 255, 0.3),
+      inset 0 1px 1px rgba(255, 255, 255, 0.5);
     overflow: hidden;
   }
 
   .iridescent-bubble::before {
     content: '';
-    @apply absolute -inset-[1px] rounded-full;
-    padding: 2px;
+    @apply absolute -inset-[2px] rounded-full;
+    padding: 2.5px;
     background: linear-gradient(
       90deg,
       #ff0055,
@@ -61,15 +67,17 @@
     mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
-    opacity: 0.9;
-    filter: blur(0.5px) saturate(1.8);
+    opacity: 0.7;
+    filter: blur(1.5px) saturate(2);
   }
 
   .iridescent-bubble::after {
     content: '';
     @apply absolute inset-0 rounded-full;
-    background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.4) 0%, transparent 70%);
-    opacity: 0.3;
+    background: 
+      radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.6) 0%, transparent 40%),
+      radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.2) 0%, transparent 40%);
+    opacity: 0.5;
   }
 }
 

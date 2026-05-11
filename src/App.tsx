@@ -23,7 +23,6 @@ import {
   AlertCircle,
   Users,
   TrendingUp,
-  LayoutDashboard,
   Home,
   MessageSquare,
   Bell,
@@ -156,9 +155,6 @@ const Hero = () => (
           Transformasi layanan publik dan UMKM Anda dengan sistem manajemen antrean berbasis cloud yang elegan.
         </p>
         <div className="flex flex-col md:flex-row gap-4 justify-center">
-          <a href="#admin" className="bg-white text-sky-700 px-10 py-4 rounded-full text-lg font-bold btn-apple flex items-center justify-center gap-2">
-            <LayoutDashboard size={20} /> Panel Operasional
-          </a>
           <a href="#customer" className="bg-sky-600/80 backdrop-blur-md text-white px-10 py-4 rounded-full text-lg font-bold border border-white/30 btn-apple flex items-center justify-center gap-2">
             <QrCode size={20} /> Tiket Digital
           </a>
@@ -174,6 +170,8 @@ const BottomNav = ({ onOpenChat }: { onOpenChat: () => void }) => {
 
   const items = [
     { href: '#hero', icon: <Home size={22} />, label: 'Beranda' },
+    { href: '#discovery', icon: <Search size={22} />, label: 'Cari' },
+    { href: '#pricing', icon: <BarChart3 size={22} />, label: 'Langganan' },
     { href: '#monitor', icon: <Monitor size={22} />, label: 'Monitor' },
     { href: '#customer', icon: <QrCode size={22} />, label: 'Tiket' },
     { href: '#support', icon: <HelpCircle size={22} />, label: 'Bantuan' },
@@ -237,7 +235,14 @@ const BottomNavItem = ({ href, icon, label, active, onClick }: { href: string; i
       <motion.div 
         layoutId="bubble"
         className="iridescent-bubble"
-        transition={{ type: "spring", bounce: 0.3, duration: 0.5 }}
+        transition={{ 
+          type: "spring", 
+          bounce: 0.5, 
+          stiffness: 120,
+          damping: 15,
+          mass: 0.8,
+          duration: 0.6 
+        }}
       />
     )}
     <div className={cn(
@@ -257,9 +262,7 @@ const BottomNavItem = ({ href, icon, label, active, onClick }: { href: string; i
 
 export default function App() {
   const [currentNumber, setCurrentNumber] = useState('A-24');
-  const [status, setStatus] = useState<QueueStatus>('Open');
   const [waitingList, setWaitingList] = useState(MOCK_WAITING_LIST);
-  const [lastCalled, setLastCalled] = useState<string | null>(null);
   const [queueStep, setQueueStep] = useState<'select' | 'ticket'>('select');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -271,24 +274,6 @@ export default function App() {
     inst.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     inst.type.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const handleCallNext = () => {
-    if (waitingList.length > 0) {
-      const next = waitingList[0];
-      setLastCalled(currentNumber);
-      setCurrentNumber(next.number);
-      setWaitingList(waitingList.slice(1));
-    }
-  };
-
-  const handleRecall = () => {
-    // Logic for recall animation/sound
-    console.log('Recalling:', currentNumber);
-  };
-
-  const handleSkip = () => {
-    handleCallNext();
-  };
 
   return (
     <div className="w-full" id="hero">
@@ -414,138 +399,102 @@ export default function App() {
             )}
           </AnimatePresence>
         </section>
-        {/* 1. Admin/Staff Section */}
-        <section id="admin" className="scroll-mt-24">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
-            <div>
-              <h2 className="text-xs font-bold uppercase tracking-widest text-sky-600 mb-2">Kendali Operasional</h2>
-              <h3 className="text-3xl font-extrabold text-slate-800">Panel Operasional Staf</h3>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className={cn(
-                "px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 border shadow-sm",
-                status === 'Open' ? "bg-green-100 text-green-700 border-green-200" : 
-                status === 'Break' ? "bg-amber-100 text-amber-700 border-amber-200" :
-                "bg-slate-100 text-slate-700 border-slate-200"
-              )}>
-                <span className={cn("w-2 h-2 rounded-full", 
-                  status === 'Open' ? "bg-green-500" : 
-                  status === 'Break' ? "bg-amber-500" : "bg-slate-400"
-                )} />
-                LOKET 01: {status === 'Open' ? 'AKTIF' : status === 'Break' ? 'ISTIRAHAT' : 'TUTUP'}
-              </span>
-            </div>
+
+        {/* 0.5. Subscription Section (New) */}
+        <section id="pricing" className="scroll-mt-24 space-y-12">
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-sky-600 mb-2">Paket Layanan</h2>
+            <h3 className="text-4xl font-extrabold text-slate-800 mb-6">Pilih paket yang sesuai untuk bisnis Anda</h3>
+            <p className="text-slate-500 font-medium text-lg">Investasi kecil untuk pengelolaan antrean yang jauh lebih profesional dan efisien.</p>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Controls */}
-            <GlassCard className="flex flex-col justify-between p-7 border-white/60" hover>
-              <div>
-                <h3 className="text-xs font-bold uppercase tracking-widest text-sky-600 mb-6">
-                  Kontrol Antrean
-                </h3>
-                <div className="space-y-4">
-                  <button 
-                    onClick={handleCallNext}
-                    className="w-full bg-sky-600 text-white h-20 rounded-2xl flex items-center justify-center gap-3 text-xl font-bold btn-apple shadow-lg shadow-sky-200"
-                  >
-                    PANGGIL (Next)
-                  </button>
-                  <div className="grid grid-cols-2 gap-4">
-                    <button 
-                      onClick={handleRecall}
-                      className="bg-amber-400 text-white h-14 rounded-2xl font-bold btn-apple"
-                    >
-                      ULANGI
-                    </button>
-                    <button 
-                      onClick={handleSkip}
-                      className="bg-slate-400 text-white h-14 rounded-2xl font-bold btn-apple"
-                    >
-                      LEWATI
-                    </button>
-                  </div>
-                </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Plan 1 */}
+            <GlassCard className="p-8 flex flex-col items-center border-white/60 relative overflow-hidden group" hover>
+              <div className="absolute top-0 right-0 w-24 h-24 bg-sky-500/10 blur-3xl -mr-12 -mt-12 group-hover:bg-sky-500/20 transition-colors" />
+              <h4 className="text-lg font-black text-slate-400 uppercase tracking-widest mb-4">Starter</h4>
+              <div className="flex items-baseline gap-1 mb-8">
+                <span className="text-4xl font-black text-slate-800">Rp 20.000</span>
+                <span className="text-slate-400 text-sm font-bold">/ bln</span>
               </div>
-              <div className="mt-8 pt-6 border-t border-white/40">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Status Loket</p>
-                <div className="grid grid-cols-3 gap-2">
-                  {(['Open', 'Break', 'Closed'] as QueueStatus[]).map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => setStatus(s)}
-                      className={cn(
-                        "py-3 rounded-xl text-[11px] font-bold transition-all",
-                        status === s 
-                          ? "bg-white text-sky-600 border border-sky-100 shadow-sm" 
-                          : "bg-slate-200/50 text-slate-500 hover:bg-slate-200"
-                      )}
-                    >
-                      {s === 'Open' ? 'BUKA' : s === 'Break' ? 'ISTIRAHAT' : 'TUTUP'}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <ul className="space-y-4 mb-10 w-full">
+                <li className="flex items-center gap-3 text-sm text-slate-600 font-bold">
+                  <CheckCircle2 size={18} className="text-sky-500 shrink-0" /> 1 Loket Aktif
+                </li>
+                <li className="flex items-center gap-3 text-sm text-slate-600 font-bold">
+                  <CheckCircle2 size={18} className="text-sky-500 shrink-0" /> 100 Antrean / Hari
+                </li>
+                <li className="flex items-center gap-3 text-sm text-slate-600 font-bold">
+                  <CheckCircle2 size={18} className="text-sky-500 shrink-0" /> Tiket Digital QR
+                </li>
+                <li className="flex items-center gap-3 text-sm text-slate-300 font-bold line-through">
+                  <X size={18} className="shrink-0" /> Laporan Analitik
+                </li>
+              </ul>
+              <button className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest btn-apple mt-auto">
+                Pilih Paket
+              </button>
             </GlassCard>
 
-            {/* Active Number Display */}
-            <GlassCard className="text-center flex flex-col justify-center border-t-8 border-sky-600 p-8 shadow-2xl" hover>
-              <span className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px]">Nomor Sekarang</span>
-              <motion.h4 
-                key={currentNumber}
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="text-[11rem] font-black text-sky-600 leading-none my-4 tracking-tighter"
-              >
-                {currentNumber}
-              </motion.h4>
-              <div className="bg-white/40 backdrop-blur-md py-2 px-6 rounded-xl inline-block mx-auto border border-white/60">
-                <p className="text-sky-700 font-extrabold text-lg uppercase tracking-tight">Loket 01</p>
+            {/* Plan 2 */}
+            <GlassCard className="p-8 flex flex-col items-center border-sky-200 ring-2 ring-sky-500/10 relative overflow-hidden group bg-white/60" hover>
+              <div className="absolute -top-1 -right-1 bg-sky-600 text-white px-5 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] rounded-bl-2xl z-20 shadow-lg shadow-sky-200">
+                Terpopuler
               </div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-sky-500/20 blur-3xl -mr-16 -mt-16 group-hover:bg-sky-500/30 transition-colors" />
+              <h4 className="text-lg font-black text-sky-600 uppercase tracking-widest mb-4 font-black">Pro Business</h4>
+              <div className="flex items-baseline gap-1 mb-8">
+                <span className="text-5xl font-black text-slate-900 leading-none">Rp 50.000</span>
+                <span className="text-slate-400 text-sm font-bold">/ bln</span>
+              </div>
+              <ul className="space-y-4 mb-10 w-full">
+                <li className="flex items-center gap-3 text-sm text-slate-700 font-black">
+                  <CheckCircle2 size={18} className="text-sky-500 shrink-0 shadow-sm" /> 5 Loket Aktif
+                </li>
+                <li className="flex items-center gap-3 text-sm text-slate-700 font-black">
+                  <CheckCircle2 size={18} className="text-sky-500 shrink-0 shadow-sm" /> Antrean Tanpa Batas
+                </li>
+                <li className="flex items-center gap-3 text-sm text-slate-700 font-black">
+                  <CheckCircle2 size={18} className="text-sky-500 shrink-0 shadow-sm" /> Laporan Analitik Dasar
+                </li>
+                <li className="flex items-center gap-3 text-sm text-slate-700 font-black">
+                  <CheckCircle2 size={18} className="text-sky-500 shrink-0 shadow-sm" /> Kustom Branding
+                </li>
+              </ul>
+              <button className="w-full py-4 bg-sky-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest btn-apple mt-auto shadow-[0_15px_30px_-5px_rgba(14,165,233,0.4)]">
+                Pilih Paket Pro
+              </button>
             </GlassCard>
 
-            {/* Waiting List */}
-            <GlassCard hover className="p-7">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-sky-600">Daftar Tunggu</h3>
-                <span className="px-3 py-1 bg-sky-600 text-white rounded-lg text-sm font-black shadow-lg shadow-sky-100">
-                  {waitingList.length}
-                </span>
+            {/* Plan 3 */}
+            <GlassCard className="p-8 flex flex-col items-center border-white/60 relative overflow-hidden group" hover>
+              <div className="absolute top-0 right-0 w-24 h-24 bg-slate-500/10 blur-3xl -mr-12 -mt-12 group-hover:bg-slate-500/20 transition-colors" />
+              <h4 className="text-lg font-black text-slate-400 uppercase tracking-widest mb-4">Enterprise</h4>
+              <div className="flex items-baseline gap-1 mb-8">
+                <span className="text-4xl font-black text-slate-800">Rp 100.000</span>
+                <span className="text-slate-400 text-sm font-bold">/ bln</span>
               </div>
-              <div className="space-y-3 overflow-y-auto max-h-[380px] pr-2 custom-scrollbar">
-                <AnimatePresence initial={false}>
-                  {waitingList.map((item) => (
-                    <motion.div
-                      key={item.id}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 10 }}
-                      className="bg-white/60 p-5 rounded-2xl flex justify-between items-center border border-white/80 shadow-sm hover:shadow-md transition-all group"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-11 h-11 rounded-xl bg-sky-50 flex items-center justify-center text-sky-600 font-black text-lg border border-sky-100">
-                          {item.number}
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="font-bold text-slate-700">{item.number}</span>
-                          <span className="text-[10px] font-bold text-slate-400 uppercase">Antrean #{item.id}</span>
-                        </div>
-                      </div>
-                      <span className={cn(
-                        "text-[9px] px-2.5 py-1 rounded-lg font-black uppercase tracking-widest",
-                        item.category === 'Umum' ? "bg-sky-100 text-sky-600" :
-                        item.category === 'Prioritas' ? "bg-purple-100 text-purple-600" :
-                        "bg-emerald-100 text-emerald-600"
-                      )}>
-                        {item.category}
-                      </span>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
+              <ul className="space-y-4 mb-10 w-full">
+                <li className="flex items-center gap-3 text-sm text-slate-600 font-bold">
+                  <CheckCircle2 size={18} className="text-sky-500 shrink-0" /> Loket Tanpa Batas
+                </li>
+                <li className="flex items-center gap-3 text-sm text-slate-600 font-bold">
+                  <CheckCircle2 size={18} className="text-sky-500 shrink-0" /> Analitik Lanjutan & AI
+                </li>
+                <li className="flex items-center gap-3 text-sm text-slate-600 font-bold">
+                  <CheckCircle2 size={18} className="text-sky-500 shrink-0" /> API Integration
+                </li>
+                <li className="flex items-center gap-3 text-sm text-slate-600 font-bold">
+                  <CheckCircle2 size={18} className="text-sky-500 shrink-0" /> Support Prioritas 24/7
+                </li>
+              </ul>
+              <button className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest btn-apple mt-auto">
+                Pilih Paket
+              </button>
             </GlassCard>
           </div>
         </section>
+
 
         {/* 2. Monitoring (Public Display) */}
         <section id="monitor" className="scroll-mt-24">
