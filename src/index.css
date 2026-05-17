@@ -11,64 +11,82 @@
 @layer base {
   body {
     @apply font-sans text-slate-800 min-h-screen overflow-x-hidden;
-    background: linear-gradient(135deg, #e0f2fe 0%, #bfdbfe 100%);
+    background: #f8fafc;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    @apply fixed inset-0 -z-20;
+    background: 
+      radial-gradient(at 0% 0%, #bae6fd 0px, transparent 50%),
+      radial-gradient(at 50% 0%, #e0f2fe 0px, transparent 50%),
+      radial-gradient(at 100% 0%, #dbeafe 0px, transparent 50%),
+      radial-gradient(at 0% 50%, #f0f9ff 0px, transparent 50%),
+      radial-gradient(at 100% 50%, #bfdbfe 0px, transparent 50%),
+      radial-gradient(at 0% 100%, #e0f2fe 0px, transparent 50%),
+      radial-gradient(at 50% 100%, #bae6fd 0px, transparent 50%),
+      radial-gradient(at 100% 100%, #bfdbfe 0px, transparent 50%);
+    opacity: 0.8;
   }
 }
 
 @layer components {
   .glass-card {
-    @apply bg-white/40 backdrop-blur-xl border border-white/60 rounded-3xl shadow-xl;
+    @apply bg-white/20 backdrop-blur-[40px] border border-white/40 rounded-[2.5rem] shadow-2xl;
+    box-shadow: 
+      0 30px 60px -12px rgba(0, 0, 0, 0.08),
+      0 18px 36px -18px rgba(0, 0, 0, 0.1),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.2);
   }
 
   .glass-nav {
-    @apply bg-white/40 backdrop-blur-xl border-b border-white/60;
+    @apply bg-white/30 backdrop-blur-2xl border-b border-white/20;
   }
 
   .btn-apple {
-    @apply transition-all duration-200 ease-in-out hover:-translate-y-0.5 active:scale-95 shadow-sm;
+    @apply transition-all duration-500 hover:-translate-y-1 active:scale-95 active:duration-100;
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .liquid-nav-pill {
-    @apply bg-black/20 backdrop-blur-[60px] rounded-[4rem] p-1 flex items-center justify-around border border-white/10 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)];
-    height: 72px;
+    @apply bg-white/10 backdrop-blur-[50px] rounded-[4rem] p-1.5 flex items-center justify-around border border-white/40;
+    box-shadow: 
+      0 20px 50px -10px rgba(0, 0, 0, 0.15),
+      inset 0 0 1px 1px rgba(255,255,255,0.2);
+    height: 76px;
   }
 
   .iridescent-bubble {
-    @apply absolute -inset-x-2 -inset-y-1 sm:-inset-x-3 sm:-inset-y-1.5 rounded-full border border-white/30;
-    background: linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.2) 0%,
-      rgba(255, 255, 255, 0.05) 50%,
-      rgba(255, 255, 255, 0.1) 100%
-    ) !important;
-    backdrop-filter: blur(16px) saturate(1.5);
+    @apply absolute -inset-x-2 -inset-y-1.5 sm:-inset-x-3 sm:-inset-y-2 rounded-full border border-white/60;
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(30px) saturate(2.5) contrast(1.1);
     z-index: -1;
     box-shadow: 
-      0 12px 40px rgba(0, 0, 0, 0.5),
-      inset 0 0 20px rgba(255, 255, 255, 0.3),
-      inset 0 1px 1px rgba(255, 255, 255, 0.5);
+      0 15px 45px rgba(0, 0, 0, 0.15),
+      inset 0 0 25px rgba(255, 255, 255, 0.4),
+      inset 0 1px 4px rgba(255, 255, 255, 0.9);
     overflow: hidden;
   }
 
   .iridescent-bubble::before {
     content: '';
-    @apply absolute -inset-[2px] rounded-full;
-    padding: 2.5px;
+    @apply absolute -inset-[4px] rounded-full;
+    padding: 4px;
     background: linear-gradient(
       90deg,
-      #ff0055,
-      #ffaa00,
-      #00ffaa,
-      #0055ff,
-      #ff00ff,
-      #ff0055
+      #38bdf8,
+      #818cf8,
+      #c084fc,
+      #fb7185,
+      #38bdf8
     );
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
-    opacity: 0.7;
-    filter: blur(1.5px) saturate(2);
+    opacity: 0.8;
+    filter: blur(2px) saturate(2);
   }
 
   .iridescent-bubble::after {

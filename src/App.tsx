@@ -113,51 +113,140 @@ const MOCK_INSTITUTIONS = [
 
 // --- Sub-components ---
 
-const Navbar = ({ onOpenLogin }: { onOpenLogin: () => void }) => (
-  <nav className="glass-nav fixed w-full z-50 px-6 py-4">
-    <div className="max-w-7xl mx-auto flex justify-between items-center">
-      <div className="flex items-center gap-2">
-        <div className="w-10 h-10 bg-sky-600 rounded-xl flex items-center justify-center text-white shadow-lg">
-          <Layers size={22} />
+const Navbar = ({ onOpenLogin }: { onOpenLogin: () => void }) => {
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  return (
+    <nav className={cn(
+      "fixed w-full z-50 px-8 transition-all duration-700",
+      isScrolled ? "py-3 glass-nav shadow-2xl" : "py-6 bg-transparent"
+    )}>
+      <div className="max-w-7xl mx-auto flex justify-between items-center text-slate-900">
+        <div className="flex items-center gap-3 group cursor-pointer">
+          <div className="w-11 h-11 bg-slate-900 rounded-[14px] flex items-center justify-center text-white shadow-2xl shadow-slate-900/20">
+            <Layers size={24} />
+          </div>
+          <span className="text-2xl font-black tracking-tighter">
+            Smart<span className="text-sky-500">Queue</span>
+          </span>
         </div>
-        <span className="text-xl font-bold tracking-tight text-slate-800">Smart<span className="text-sky-600">Queue</span></span>
+        <button 
+          onClick={onOpenLogin}
+          className={cn(
+            "px-6 py-2.5 rounded-full font-black btn-apple text-xs uppercase tracking-widest border transition-all duration-500",
+            isScrolled 
+              ? "bg-slate-900 text-white border-slate-900" 
+              : "bg-white/30 backdrop-blur-xl text-slate-900 border-white/60 shadow-lg"
+          )}
+        >
+          Login Pengunjung
+        </button>
       </div>
-      <button 
-        onClick={onOpenLogin}
-        className="bg-sky-600 text-white px-4 py-1.5 rounded-full font-bold btn-apple text-[11px] shadow-md"
-      >
-        Login Pengunjung
-      </button>
-    </div>
-  </nav>
+    </nav>
+  );
+};
+
+const FloatingElement = ({ children, delay = 0, className }: { children: ReactNode; delay?: number; className?: string }) => (
+  <motion.div
+    animate={{ 
+      y: [0, -20, 0],
+      rotate: [0, 5, -5, 0]
+    }}
+    transition={{ 
+      duration: 6, 
+      repeat: Infinity, 
+      delay,
+      ease: "easeInOut" 
+    }}
+    className={cn("absolute pointer-events-none", className)}
+  >
+    {children}
+  </motion.div>
 );
 
 const Hero = () => (
-  <section className="h-screen w-full relative overflow-hidden flex items-center justify-center pt-20">
-    <div className="absolute inset-0 z-0">
-      <img 
-        src="https://images.unsplash.com/photo-1556742044-3c52d6e88c62?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80" 
-        className="w-full h-full object-cover brightness-50"
-        alt="Background"
+  <section className="min-h-screen w-full relative overflow-hidden flex items-center justify-center pt-20 bg-[#f8fafc]">
+    {/* Liquid Background Blobs */}
+    <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+      <motion.div 
+        animate={{ 
+          x: [0, 80, 0],
+          y: [0, 30, 0],
+          scale: [1, 1.1, 1],
+          rotate: [0, 10, 0]
+        }}
+        transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+        className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-sky-300/30 rounded-full blur-[130px] opacity-70"
       />
+      <motion.div 
+        animate={{ 
+          x: [0, -60, 0],
+          y: [0, 80, 0],
+          scale: [1, 1.2, 1],
+          rotate: [0, -15, 0]
+        }}
+        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+        className="absolute bottom-1/4 right-1/4 w-[700px] h-[700px] bg-indigo-300/30 rounded-full blur-[150px] opacity-70"
+      />
+      <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,1)_0%,rgba(255,255,255,0)_70%)]" />
     </div>
-    <div className="relative z-10 max-w-4xl text-center px-6">
+
+    {/* Floating Glass Elements */}
+    <FloatingElement delay={0} className="top-[20%] left-[10%] hidden lg:block">
+      <div className="w-32 h-32 glass-card bg-white/40 rotate-12 flex items-center justify-center border-white/60">
+        <Users size={40} className="text-sky-500 opacity-40" />
+      </div>
+    </FloatingElement>
+    <FloatingElement delay={1} className="bottom-[25%] right-[15%] hidden lg:block">
+      <div className="w-24 h-24 glass-card bg-white/40 -rotate-12 flex items-center justify-center border-white/60">
+        <Clock size={32} className="text-indigo-500 opacity-40" />
+      </div>
+    </FloatingElement>
+    <FloatingElement delay={2} className="top-[30%] right-[10%] hidden lg:block">
+      <div className="w-20 h-20 glass-card bg-white/30 rotate-45 flex items-center justify-center border-white/60">
+        <BarChart3 size={28} className="text-emerald-500 opacity-40" />
+      </div>
+    </FloatingElement>
+    
+    <div className="relative z-10 max-w-5xl text-center px-6">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="backdrop-blur-md bg-white/10 p-8 md:p-16 rounded-[40px] border border-white/20 shadow-2xl"
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
       >
-        <h1 className="text-5xl md:text-7xl font-bold mb-6 text-white leading-tight">
-          Antrean Modern,<br /><span className="text-sky-300">Pelanggan Senang.</span>
+        <div className="inline-block px-5 py-2 glass-card bg-white/50 border-white/80 mb-8 shadow-sm">
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-sky-600">Terpercaya oleh +500 UMKM</span>
+        </div>
+        <h1 className="text-6xl md:text-[7.5rem] font-black mb-8 text-slate-900 leading-[0.9] tracking-tighter">
+          Antrean <span className="text-transparent bg-clip-text bg-gradient-to-b from-sky-400 to-sky-600">Revolusioner.</span>
         </h1>
-        <p className="text-xl md:text-2xl mb-10 font-light text-slate-100">
-          Transformasi layanan publik dan UMKM Anda dengan sistem manajemen antrean berbasis cloud yang elegan.
+        <p className="text-xl md:text-2xl mb-12 font-bold text-slate-500 max-w-3xl mx-auto leading-relaxed px-4">
+          Hadirkan pengalaman tunggu yang <span className="text-slate-900">elegan & bebas stres</span> dengan sistem manajemen antrean berbasis Liquid Design tercanggih.
         </p>
-        <div className="flex flex-col md:flex-row gap-4 justify-center">
-          <a href="#customer" className="bg-sky-600/80 backdrop-blur-md text-white px-10 py-4 rounded-full text-lg font-bold border border-white/30 btn-apple flex items-center justify-center gap-2">
-            <QrCode size={20} /> Tiket Digital
-          </a>
+        <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+          <motion.a 
+            href="#discovery" 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="w-full sm:w-auto bg-slate-900 text-white px-12 py-5 rounded-3xl text-lg font-black btn-apple flex items-center justify-center gap-2 shadow-2xl shadow-slate-900/30"
+          >
+            Mulai Sekarang
+          </motion.a>
+          <motion.a 
+            href="#customer" 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="w-full sm:w-auto bg-white/40 backdrop-blur-md text-slate-900 px-12 py-5 rounded-3xl text-lg font-black border border-white/80 btn-apple flex items-center justify-center gap-3 shadow-xl"
+          >
+            <QrCode size={22} className="text-sky-600" /> Cek Antrean
+          </motion.a>
         </div>
       </motion.div>
     </div>
@@ -284,70 +373,88 @@ export default function App() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-12 md:py-24 pb-48 space-y-20 md:space-y-32">
         
         {/* 0. Discovery Section (New) */}
-        <section id="discovery" className="scroll-mt-24 space-y-12">
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-sky-600 mb-2">Cari & Temukan</h2>
-            <h3 className="text-4xl font-extrabold text-slate-800 mb-6">Cari lokasi atau instansi yang ingin Anda kunjungi</h3>
-            <p className="text-slate-500 font-medium">Temukan lokasi terdekat, lihat layanan tersedia, dan ambil nomor antrean secara digital dari genggaman Anda.</p>
-          </div>
+        <section id="discovery" className="scroll-mt-32 space-y-16">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center max-w-3xl mx-auto mb-16"
+          >
+            <h2 className="text-xs font-black uppercase tracking-[0.4em] text-sky-500 mb-6 bg-sky-500/10 inline-block px-4 py-1.5 rounded-full">Eksplorasi Lokasi</h2>
+            <h3 className="text-5xl md:text-6xl font-black text-slate-900 mb-8 tracking-tight leading-[1.1]">Temukan Lokasi & Layanan Terdekat</h3>
+            <p className="text-slate-500 font-bold text-lg md:text-xl leading-relaxed">Pilih instansi tujuan Anda, lihat ketersediaan layanan, dan dapatkan tiket Anda secara instan.</p>
+          </motion.div>
 
-          <div className="relative max-w-2xl mx-auto">
-            <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400">
-              <Search size={22} />
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="relative max-w-3xl mx-auto group"
+          >
+            <div className="absolute -inset-1 bg-gradient-to-r from-sky-400 to-indigo-500 rounded-[3rem] blur opacity-10 group-hover:opacity-30 transition duration-1000 group-hover:duration-200"></div>
+            <div className="relative">
+              <div className="absolute left-7 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-sky-500 transition-colors">
+                <Search size={26} />
+              </div>
+              <input 
+                type="text" 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Cari Bank, Rumah Sakit, atau Kantor Pemerintah..." 
+                className="w-full h-20 pl-20 pr-10 bg-white/60 backdrop-blur-3xl rounded-[2.8rem] shadow-2xl border border-white/80 text-slate-900 font-black focus:ring-12 focus:ring-sky-500/10 focus:outline-none transition-all placeholder:text-slate-400 text-xl tracking-tight"
+              />
             </div>
-            <input 
-              type="text" 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari Bank, Rumah Sakit, atau Kantor Pemerintah..." 
-              className="w-full h-16 pl-16 pr-6 bg-white rounded-3xl shadow-xl border border-slate-100 text-slate-700 font-bold focus:ring-4 focus:ring-sky-500/10 focus:outline-none transition-all placeholder:text-slate-300"
-            />
-          </div>
+          </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
             <AnimatePresence mode="popLayout">
-              {filteredInstitutions.map((inst) => (
+              {filteredInstitutions.map((inst, idx) => (
                 <motion.div
                   layout
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.1 }}
                   key={inst.id}
                   onClick={() => setSelectedInstitution(inst)}
                   className={cn(
-                    "group bg-white rounded-[32px] overflow-hidden border border-slate-100 shadow-lg hover:shadow-2xl transition-all cursor-pointer",
-                    selectedInstitution?.id === inst.id && "ring-4 ring-sky-500/20 border-sky-500"
+                    "group glass-card overflow-hidden transition-all cursor-pointer border-white/60 hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)]",
+                    selectedInstitution?.id === inst.id && "ring-4 ring-sky-500/40 border-white"
                   )}
                 >
-                  <div className="h-48 relative overflow-hidden">
+                  <div className="h-64 relative overflow-hidden">
                     <img 
                       src={inst.image} 
                       alt={inst.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
                     />
-                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-sky-600 shadow-sm">
+                    <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    <div className="absolute top-6 right-6 bg-white/20 backdrop-blur-xl px-4 py-2 rounded-full text-xs font-black uppercase tracking-[0.2em] text-white border border-white/30 shadow-2xl">
                       {inst.distance}
                     </div>
-                  </div>
-                  <div className="p-6">
-                    <div className="flex items-center gap-2 mb-2">
-                       <span className="text-[10px] font-bold text-sky-600 uppercase tracking-widest bg-sky-50 px-2 py-0.5 rounded-md">
+                    <div className="absolute bottom-6 left-6 right-6">
+                       <span className="text-[10px] font-black text-sky-400 uppercase tracking-[0.3em] bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/20 mb-3 inline-block">
                         {inst.type}
                        </span>
                     </div>
-                    <h4 className="text-xl font-extrabold text-slate-800 mb-2 leading-tight">{inst.name}</h4>
-                    <p className="text-xs text-slate-400 font-medium mb-4 flex items-center gap-1.5 line-clamp-1">
-                      <Search size={12} className="shrink-0" /> {inst.address}
+                  </div>
+                  <div className="p-8 relative bg-white/10 backdrop-blur-sm">
+                    <h4 className="text-2xl font-black text-slate-900 mb-4 leading-tight tracking-tight group-hover:text-sky-600 transition-colors">{inst.name}</h4>
+                    <p className="text-xs text-slate-500 font-bold mb-8 flex items-center gap-3 line-clamp-1">
+                      <div className="w-8 h-8 rounded-full bg-slate-900/5 flex items-center justify-center shrink-0">
+                        <Search size={14} className="text-slate-400" />
+                      </div>
+                      {inst.address}
                     </p>
                     
-                    <div className="flex flex-wrap gap-1.5 mt-auto">
+                    <div className="flex flex-wrap gap-2.5">
                       {inst.services.slice(0, 3).map(service => (
-                        <span key={service} className="text-[10px] font-bold bg-slate-50 text-slate-500 px-2.5 py-1 rounded-lg border border-slate-100">
+                        <span key={service} className="text-[10px] font-black bg-white/80 text-slate-600 px-4 py-2 rounded-2xl border border-white shadow-sm">
                           {service}
                         </span>
                       ))}
                       {inst.services.length > 3 && (
-                        <span className="text-[10px] font-bold bg-slate-50 text-slate-400 px-2.5 py-1 rounded-lg border border-slate-100">
+                        <span className="text-[10px] font-black bg-sky-500/10 text-sky-600 px-3 py-2 rounded-2xl border border-sky-500/20">
                           +{inst.services.length - 3}
                         </span>
                       )}
@@ -358,39 +465,40 @@ export default function App() {
             </AnimatePresence>
           </div>
 
+
           <AnimatePresence>
             {selectedInstitution && (
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                className="bg-sky-600 rounded-[40px] p-8 md:p-12 text-white shadow-2xl relative overflow-hidden"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="glass-card p-8 md:p-14 text-slate-900 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] relative overflow-hidden border-white/60"
               >
-                <div className="absolute top-8 right-8 cursor-pointer hover:bg-white/10 p-2 rounded-full transition-colors" onClick={() => setSelectedInstitution(null)}>
+                <div className="absolute top-8 right-8 cursor-pointer bg-slate-900/5 hover:bg-slate-900/10 p-3 rounded-full transition-colors" onClick={() => setSelectedInstitution(null)}>
                   <X size={24} />
                 </div>
                 <div className="relative z-10">
-                  <h3 className="text-xs font-black uppercase tracking-widest text-sky-200 mb-6">3. Pilih Jenis Layanan</h3>
-                  <h2 className="text-3xl font-black mb-8">Pilih layanan yang Anda perlukan di<br />{selectedInstitution.name}</h2>
+                  <h3 className="text-xs font-black uppercase tracking-[0.3em] text-sky-600 mb-8">Pilih Kategori Layanan</h3>
+                  <h2 className="text-4xl font-black mb-12 tracking-tight">Apa yang bisa kami bantu di<br /><span className="text-sky-600">{selectedInstitution.name}?</span></h2>
                   
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {selectedInstitution.services.map((service, idx) => (
                       <motion.button
                         key={service}
-                        whileHover={{ scale: 1.02 }}
+                        whileHover={{ y: -5, scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => {
                           setSelectedCategory(service as any);
                           setQueueStep('ticket');
                           window.location.hash = '#customer';
                         }}
-                        className="p-6 bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 text-left hover:bg-white hover:text-sky-600 transition-all group"
+                        className="p-8 bg-white/40 backdrop-blur-xl rounded-[2.5rem] border border-white/80 text-left hover:bg-white transition-all group shadow-sm hover:shadow-2xl"
                       >
-                        <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center mb-4 group-hover:bg-sky-100 group-hover:text-sky-600 transition-colors">
-                          {idx % 4 === 0 ? <Users size={20} /> : idx % 4 === 1 ? <User size={20} /> : idx % 4 === 2 ? <FastForward size={20} /> : <AlertCircle size={20} />}
+                        <div className="w-12 h-12 rounded-2xl bg-sky-500/10 flex items-center justify-center mb-6 group-hover:bg-sky-500 group-hover:text-white transition-all duration-500 shadow-inner">
+                          {idx % 4 === 0 ? <Users size={24} /> : idx % 4 === 1 ? <User size={24} /> : idx % 4 === 2 ? <FastForward size={24} /> : <AlertCircle size={24} />}
                         </div>
-                        <p className="font-extrabold text-sm uppercase tracking-wider">{service}</p>
-                        <p className="text-[10px] font-bold opacity-60 mt-1 uppercase">Estimasi 15 Menit</p>
+                        <p className="font-black text-lg text-slate-900 leading-tight mb-2">{service}</p>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Estimasi 15 Menit</p>
                       </motion.button>
                     ))}
                   </div>
@@ -401,95 +509,74 @@ export default function App() {
         </section>
 
         {/* 0.5. Subscription Section (New) */}
-        <section id="pricing" className="scroll-mt-24 space-y-12">
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-sky-600 mb-2">Paket Layanan</h2>
-            <h3 className="text-4xl font-extrabold text-slate-800 mb-6">Pilih paket yang sesuai untuk bisnis Anda</h3>
-            <p className="text-slate-500 font-medium text-lg">Investasi kecil untuk pengelolaan antrean yang jauh lebih profesional dan efisien.</p>
+        <section id="pricing" className="scroll-mt-32 space-y-16">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-xs font-black uppercase tracking-[0.3em] text-sky-500 mb-4 px-4 py-1.5 bg-sky-500/10 rounded-full inline-block">Paket Layanan</h2>
+            <h3 className="text-5xl md:text-6xl font-black text-slate-900 mb-8 tracking-tight leading-[1.1]">Investasi Untuk Efisiensi Bisnis Anda</h3>
+            <p className="text-slate-500 font-medium text-xl leading-relaxed">Pengelolaan antrean profesional dengan sentuhan teknologi modern.</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-10">
             {/* Plan 1 */}
-            <GlassCard className="p-8 flex flex-col items-center border-white/60 relative overflow-hidden group" hover>
-              <div className="absolute top-0 right-0 w-24 h-24 bg-sky-500/10 blur-3xl -mr-12 -mt-12 group-hover:bg-sky-500/20 transition-colors" />
-              <h4 className="text-lg font-black text-slate-400 uppercase tracking-widest mb-4">Starter</h4>
-              <div className="flex items-baseline gap-1 mb-8">
-                <span className="text-4xl font-black text-slate-800">Rp 20.000</span>
+            <GlassCard className="p-10 flex flex-col items-center border-white/60 relative overflow-hidden group shadow-none hover:shadow-2xl transition-all duration-700" hover>
+              <h4 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-6">Starter</h4>
+              <div className="flex items-baseline gap-1 mb-10">
+                <span className="text-5xl font-black text-slate-900 tracking-tighter">Rp 20k</span>
                 <span className="text-slate-400 text-sm font-bold">/ bln</span>
               </div>
-              <ul className="space-y-4 mb-10 w-full">
-                <li className="flex items-center gap-3 text-sm text-slate-600 font-bold">
-                  <CheckCircle2 size={18} className="text-sky-500 shrink-0" /> 1 Loket Aktif
+              <ul className="space-y-6 mb-12 w-full">
+                <li className="flex items-center gap-4 text-sm text-slate-600 font-bold">
+                  <CheckCircle2 size={20} className="text-sky-500 shrink-0" /> 1 Loket Aktif
                 </li>
-                <li className="flex items-center gap-3 text-sm text-slate-600 font-bold">
-                  <CheckCircle2 size={18} className="text-sky-500 shrink-0" /> 100 Antrean / Hari
-                </li>
-                <li className="flex items-center gap-3 text-sm text-slate-600 font-bold">
-                  <CheckCircle2 size={18} className="text-sky-500 shrink-0" /> Tiket Digital QR
-                </li>
-                <li className="flex items-center gap-3 text-sm text-slate-300 font-bold line-through">
-                  <X size={18} className="shrink-0" /> Laporan Analitik
+                <li className="flex items-center gap-4 text-sm text-slate-600 font-bold">
+                  <CheckCircle2 size={20} className="text-sky-500 shrink-0" /> 100 Antrean / Hari
                 </li>
               </ul>
-              <button className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest btn-apple mt-auto">
+              <button className="w-full py-5 bg-slate-900 text-white rounded-[24px] font-black text-xs uppercase tracking-widest btn-apple mt-auto">
                 Pilih Paket
               </button>
             </GlassCard>
 
             {/* Plan 2 */}
-            <GlassCard className="p-8 flex flex-col items-center border-sky-200 ring-2 ring-sky-500/10 relative overflow-hidden group bg-white/60" hover>
-              <div className="absolute -top-1 -right-1 bg-sky-600 text-white px-5 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] rounded-bl-2xl z-20 shadow-lg shadow-sky-200">
+            <GlassCard className="p-10 flex flex-col items-center border-white/80 ring-2 ring-sky-500/20 relative overflow-hidden group bg-white/40 shadow-2xl shadow-sky-500/10" hover>
+              <div className="absolute top-0 right-0 bg-sky-500 text-white px-6 py-2 text-[10px] font-black uppercase tracking-[0.2em] rounded-bl-3xl">
                 Terpopuler
               </div>
-              <div className="absolute top-0 right-0 w-32 h-32 bg-sky-500/20 blur-3xl -mr-16 -mt-16 group-hover:bg-sky-500/30 transition-colors" />
-              <h4 className="text-lg font-black text-sky-600 uppercase tracking-widest mb-4 font-black">Pro Business</h4>
-              <div className="flex items-baseline gap-1 mb-8">
-                <span className="text-5xl font-black text-slate-900 leading-none">Rp 50.000</span>
+              <h4 className="text-sm font-black text-sky-600 uppercase tracking-[0.2em] mb-6 font-black">Pro Business</h4>
+              <div className="flex items-baseline gap-1 mb-10">
+                <span className="text-6xl font-black text-slate-900 tracking-tighter">Rp 50k</span>
                 <span className="text-slate-400 text-sm font-bold">/ bln</span>
               </div>
-              <ul className="space-y-4 mb-10 w-full">
-                <li className="flex items-center gap-3 text-sm text-slate-700 font-black">
-                  <CheckCircle2 size={18} className="text-sky-500 shrink-0 shadow-sm" /> 5 Loket Aktif
+              <ul className="space-y-6 mb-12 w-full">
+                <li className="flex items-center gap-4 text-sm text-slate-800 font-black">
+                  <CheckCircle2 size={20} className="text-sky-500 shrink-0" /> 5 Loket Aktif
                 </li>
-                <li className="flex items-center gap-3 text-sm text-slate-700 font-black">
-                  <CheckCircle2 size={18} className="text-sky-500 shrink-0 shadow-sm" /> Antrean Tanpa Batas
-                </li>
-                <li className="flex items-center gap-3 text-sm text-slate-700 font-black">
-                  <CheckCircle2 size={18} className="text-sky-500 shrink-0 shadow-sm" /> Laporan Analitik Dasar
-                </li>
-                <li className="flex items-center gap-3 text-sm text-slate-700 font-black">
-                  <CheckCircle2 size={18} className="text-sky-500 shrink-0 shadow-sm" /> Kustom Branding
+                <li className="flex items-center gap-4 text-sm text-slate-800 font-black">
+                  <CheckCircle2 size={20} className="text-sky-500 shrink-0" /> Antrean Tanpa Batas
                 </li>
               </ul>
-              <button className="w-full py-4 bg-sky-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest btn-apple mt-auto shadow-[0_15px_30px_-5px_rgba(14,165,233,0.4)]">
-                Pilih Paket Pro
+              <button className="w-full py-5 bg-sky-600 text-white rounded-[24px] font-black text-xs uppercase tracking-widest btn-apple mt-auto shadow-2xl shadow-sky-600/30">
+                Mulai Berlangganan
               </button>
             </GlassCard>
 
             {/* Plan 3 */}
-            <GlassCard className="p-8 flex flex-col items-center border-white/60 relative overflow-hidden group" hover>
-              <div className="absolute top-0 right-0 w-24 h-24 bg-slate-500/10 blur-3xl -mr-12 -mt-12 group-hover:bg-slate-500/20 transition-colors" />
-              <h4 className="text-lg font-black text-slate-400 uppercase tracking-widest mb-4">Enterprise</h4>
-              <div className="flex items-baseline gap-1 mb-8">
-                <span className="text-4xl font-black text-slate-800">Rp 100.000</span>
+            <GlassCard className="p-10 flex flex-col items-center border-white/60 relative overflow-hidden group" hover>
+              <h4 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-6">Enterprise</h4>
+              <div className="flex items-baseline gap-1 mb-10">
+                <span className="text-5xl font-black text-slate-900 tracking-tighter">Rp 100k</span>
                 <span className="text-slate-400 text-sm font-bold">/ bln</span>
               </div>
-              <ul className="space-y-4 mb-10 w-full">
-                <li className="flex items-center gap-3 text-sm text-slate-600 font-bold">
-                  <CheckCircle2 size={18} className="text-sky-500 shrink-0" /> Loket Tanpa Batas
+              <ul className="space-y-6 mb-12 w-full">
+                <li className="flex items-center gap-4 text-sm text-slate-600 font-bold">
+                  <CheckCircle2 size={20} className="text-sky-500 shrink-0" /> Unlimited Loket
                 </li>
-                <li className="flex items-center gap-3 text-sm text-slate-600 font-bold">
-                  <CheckCircle2 size={18} className="text-sky-500 shrink-0" /> Analitik Lanjutan & AI
-                </li>
-                <li className="flex items-center gap-3 text-sm text-slate-600 font-bold">
-                  <CheckCircle2 size={18} className="text-sky-500 shrink-0" /> API Integration
-                </li>
-                <li className="flex items-center gap-3 text-sm text-slate-600 font-bold">
-                  <CheckCircle2 size={18} className="text-sky-500 shrink-0" /> Support Prioritas 24/7
+                <li className="flex items-center gap-4 text-sm text-slate-600 font-bold">
+                  <CheckCircle2 size={20} className="text-sky-500 shrink-0" /> Support Prioritas
                 </li>
               </ul>
-              <button className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest btn-apple mt-auto">
-                Pilih Paket
+              <button className="w-full py-5 bg-slate-900 text-white rounded-[24px] font-black text-xs uppercase tracking-widest btn-apple mt-auto">
+                Hubungi Kami
               </button>
             </GlassCard>
           </div>
@@ -497,60 +584,64 @@ export default function App() {
 
 
         {/* 2. Monitoring (Public Display) */}
-        <section id="monitor" className="scroll-mt-24">
-          <h2 className="text-xs font-bold uppercase tracking-widest text-sky-600 mb-6">Monitoring Visual</h2>
+        <section id="monitor" className="scroll-mt-32">
+          <div className="text-center md:text-left mb-12">
+            <h2 className="text-xs font-black uppercase tracking-[0.3em] text-sky-500 mb-4 px-4 py-1.5 bg-sky-500/10 rounded-full inline-block">Sistem Monitoring</h2>
+            <h3 className="text-4xl font-black text-slate-800 tracking-tight">Display Monitor Publik</h3>
+          </div>
           
-          <div className="bg-slate-900 rounded-[40px] overflow-hidden flex flex-col shadow-2xl relative border border-slate-700 min-h-[500px]">
+          <div className="glass-card bg-slate-900 overflow-hidden flex flex-col shadow-2xl relative border-slate-700 min-h-[500px]">
             <div className="flex flex-col lg:flex-row flex-grow">
               {/* Ad/Visual Area */}
-              <div className="lg:w-1/2 bg-gradient-to-br from-indigo-950 to-slate-900 flex items-center justify-center p-8 lg:p-12 relative overflow-hidden min-h-[300px]">
-                <div className="absolute inset-0 opacity-30">
-                   <div className="w-full h-full bg-blue-500/20 blur-[120px] rounded-full translate-x-20 scale-150"></div>
+              <div className="lg:w-1/2 bg-gradient-to-br from-indigo-950 to-slate-900 flex items-center justify-center p-8 lg:p-14 relative overflow-hidden min-h-[350px]">
+                <div className="absolute inset-0 opacity-40">
+                   <motion.div 
+                     animate={{ rotate: 360 }}
+                     transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+                     className="w-full h-full bg-blue-500/20 blur-[140px] rounded-full translate-x-20 scale-150"
+                   />
                 </div>
                 <div className="text-center relative z-10">
-                  <p className="text-sky-400 text-xs font-bold tracking-[0.4em] uppercase mb-4">Promosi Utama</p>
-                  <h3 className="text-white font-serif italic text-3xl lg:text-5xl mb-4 leading-tight">Waktu Untuk Rehat</h3>
-                  <p className="text-white/60 text-sm lg:text-lg max-w-xs mx-auto font-light">Dapatkan penawaran eksklusif khusus pelanggan Smart Queue hari ini!</p>
+                  <p className="text-sky-400 text-xs font-black tracking-[0.5em] uppercase mb-6">Informasi & Edukasi</p>
+                  <h3 className="text-white font-serif italic text-4xl lg:text-6xl mb-6 leading-tight tracking-tight">Layanan Dengan Hati</h3>
+                  <p className="text-white/50 text-sm lg:text-xl max-w-sm mx-auto font-medium leading-relaxed">Nikmati kemudahan bertransaksi digital bersama Smart Queue.</p>
                   <motion.div 
-                    animate={{ y: [0, -10, 0] }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                    className="mt-8 lg:mt-12 w-16 h-16 lg:w-24 lg:h-24 bg-white/10 backdrop-blur-2xl rounded-full flex items-center justify-center mx-auto border border-white/20"
+                    animate={{ scale: [1, 1.05, 1] }}
+                    transition={{ duration: 3, repeat: Infinity }}
+                    className="mt-12 w-20 h-20 bg-white/10 backdrop-blur-3xl rounded-[2rem] flex items-center justify-center mx-auto border border-white/20 shadow-2xl"
                   >
-                    <Play size={24} fill="white" className="ml-1 lg:hidden" />
-                    <Play size={32} fill="white" className="ml-1 hidden lg:block" />
+                    <Play size={32} fill="white" className="ml-1 text-white" />
                   </motion.div>
                 </div>
               </div>
               {/* Queue Display */}
-    <div className="lg:w-1/2 bg-sky-600 flex flex-col items-center justify-center text-white border-l border-white/10 shadow-inner p-8 lg:p-12">
-      <p className="text-[10px] lg:text-[12px] font-bold tracking-[0.3em] text-sky-200 uppercase mb-4">Nomor Sekarang</p>
-      <AnimatePresence mode="wait">
-        <motion.h4 
-          key={currentNumber}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-7xl sm:text-8xl lg:text-[12rem] font-black leading-none my-2 tracking-tighter drop-shadow-2xl"
-        >
-          {currentNumber}
-        </motion.h4>
-      </AnimatePresence>
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="bg-white/10 backdrop-blur-md py-3 lg:py-4 px-6 lg:px-8 rounded-2xl text-xl lg:text-3xl font-black border border-white/30 mt-6 shadow-xl"
-    >
-      LOKET 01
-    </motion.div>
+              <div className="lg:w-1/2 bg-sky-600 flex flex-col items-center justify-center text-white border-l border-white/10 p-12 lg:p-20 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 blur-[100px] rounded-full -mr-32 -mt-32"></div>
+                <p className="text-xs font-black tracking-[0.4em] text-sky-200 uppercase mb-8 relative z-10">ANTREAN SEKARANG</p>
+                <AnimatePresence mode="wait">
+                  <motion.h4 
+                    key={currentNumber}
+                    initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    className="text-8xl sm:text-9xl lg:text-[14rem] font-black leading-none my-4 tracking-tighter drop-shadow-[0_20px_50px_rgba(0,0,0,0.3)] relative z-10"
+                  >
+                    {currentNumber}
+                  </motion.h4>
+                </AnimatePresence>
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="bg-white/20 backdrop-blur-2xl py-4 px-10 rounded-[2rem] text-2xl lg:text-4xl font-black border border-white/40 mt-12 shadow-2xl relative z-10"
+                >
+                  LOKET 01
+                </motion.div>
               </div>
             </div>
             {/* Running Text */}
-            <div className="h-14 bg-white flex items-center overflow-hidden border-t-[6px] border-sky-400">
+            <div className="h-16 bg-white flex items-center overflow-hidden border-t-[8px] border-sky-500 shadow-inner">
               <div className="whitespace-nowrap flex running-text-content">
-                <span className="text-sky-950 font-black text-sm px-8 uppercase tracking-widest leading-none">
-                  PENGUMUMAN: Layanan hari ini dibatasi sampai jam 16:00 WIB. Terima kasih atas pengertian Anda. • Dapatkan Tiket Digital via Aplikasi SmartQueue! • Promo UMKM: Diskon 20% khusus transaksi digital hari ini! • Smart Queue - Solusi Antrean Masa Depan • 
-                </span>
-                <span className="text-sky-950 font-black text-sm px-8 uppercase tracking-widest leading-none">
-                  PENGUMUMAN: Layanan hari ini dibatasi sampai jam 16:00 WIB. Terima kasih atas pengertian Anda. • Dapatkan Tiket Digital via Aplikasi SmartQueue! • Promo UMKM: Diskon 20% khusus transaksi digital hari ini! • Smart Queue - Solusi Antrean Masa Depan • 
+                <span className="text-slate-900 font-black text-sm px-12 uppercase tracking-[0.2em] leading-none py-2">
+                  PENGUMUMAN: Layanan hari ini dibatasi sampai jam 16:00 WIB • Ambil nomor antrean online untuk mendapatkan prioritas layanan • Smart Queue - Revolusi Digital Operasional Bisnis Anda • 
                 </span>
               </div>
             </div>
@@ -558,27 +649,30 @@ export default function App() {
         </section>
 
         {/* 3. Area Pelanggan */}
-        <section id="customer" className="scroll-mt-24 max-w-lg mx-auto w-full">
-          <h2 className="text-xs font-bold uppercase tracking-widest text-sky-600 mb-6 text-center">Pelayanan Mandiri</h2>
+        <section id="customer" className="scroll-mt-32 max-w-lg mx-auto w-full">
+          <div className="text-center mb-12">
+            <h2 className="text-xs font-black uppercase tracking-[0.3em] text-sky-500 mb-4 px-4 py-1.5 bg-sky-500/10 rounded-full inline-block">Pelayanan Mandiri</h2>
+            <h3 className="text-3xl font-black text-slate-800 tracking-tight">Ambil Nomor Antrean</h3>
+          </div>
           
           <AnimatePresence mode="wait">
             {queueStep === 'select' ? (
               <motion.div
                 key="select-step"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="space-y-4"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="space-y-6"
               >
-                <GlassCard className="p-8 text-center bg-white/40" hover>
-                  <h3 className="text-2xl font-black text-slate-800 mb-2">Ambil Antrean Baru</h3>
-                  <p className="text-slate-500 text-sm mb-8">Silahkan pilih kategori layanan Anda</p>
+                <GlassCard className="p-10 text-center bg-white/40 border-white/80" hover shadow="2xl">
+                  <h3 className="text-2xl font-black text-slate-900 mb-3 tracking-tight">Kategori Layanan</h3>
+                  <p className="text-slate-500 font-bold text-sm mb-10 uppercase tracking-widest">Sentuh untuk memproses</p>
                   
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="grid grid-cols-1 gap-5">
                     {[
-                      { id: 'umum', label: 'Layanan Umum', desc: 'Pendaftaran & Administrasi', icon: <Users size={24} />, color: 'hover:bg-sky-50' },
-                      { id: 'prioritas', label: 'Layanan Prioritas', desc: 'Lansia, Ibu Hamil & Disabilitas', icon: <TrendingUp size={24} />, color: 'hover:bg-purple-50' },
-                      { id: 'konsultasi', label: 'Konsultasi Ahli', desc: 'Pertemuan Tatap Muka Langsung', icon: <MessageSquare size={24} />, color: 'hover:bg-emerald-50' },
+                      { id: 'umum', label: 'Layanan Umum', desc: 'Pendaftaran & Administrasi', icon: <Users size={28} />, color: 'hover:bg-sky-500/10' },
+                      { id: 'prioritas', label: 'Layanan Prioritas', desc: 'Lansia & Ibu Hamil', icon: <TrendingUp size={28} />, color: 'hover:bg-purple-500/10' },
+                      { id: 'konsultasi', label: 'Konsultasi Ahli', desc: 'Tatatap Muka Langsung', icon: <MessageSquare size={28} />, color: 'hover:bg-emerald-500/10' },
                     ].map((item) => (
                       <button
                         key={item.id}
@@ -587,89 +681,76 @@ export default function App() {
                           setQueueStep('ticket');
                         }}
                         className={cn(
-                          "flex items-center gap-5 p-5 rounded-3xl bg-white border border-slate-100 text-left transition-all hover:scale-[1.02] active:scale-95 group shadow-sm",
+                          "flex items-center gap-6 p-6 rounded-[2rem] bg-white border border-white text-left transition-all hover:scale-[1.02] active:scale-95 group shadow-sm",
                           item.color
                         )}
                       >
-                        <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-white group-hover:text-sky-600 transition-colors shadow-inner">
+                        <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-sky-500 group-hover:text-white transition-all duration-500 shadow-inner">
                           {item.icon}
                         </div>
                         <div>
-                          <p className="font-black text-slate-800">{item.label}</p>
-                          <p className="text-xs text-slate-400 font-medium">{item.desc}</p>
+                          <p className="font-black text-xl text-slate-900 tracking-tight">{item.label}</p>
+                          <p className="text-xs text-slate-400 font-black uppercase tracking-widest mt-1">{item.desc}</p>
                         </div>
-                        <FastForward className="ml-auto text-slate-200 group-hover:text-sky-300 transition-colors" size={20} />
+                        <ChevronRight className="ml-auto text-slate-200 group-hover:text-sky-500 group-hover:translate-x-1 transition-all" size={24} />
                       </button>
                     ))}
                   </div>
                 </GlassCard>
-                <p className="text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest px-8">
-                  Pilih sesuai kategori layanan untuk membantu efisiensi petugas
+                <p className="text-center text-[10px] text-slate-400 font-black uppercase tracking-widest px-8">
+                  Pilih sesuai kebutuhan layanan Anda untuk mempercepat proses antrean
                 </p>
               </motion.div>
             ) : (
               <motion.div
                 key="ticket-step"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: 0.8, y: 50 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.8, y: 50 }}
                 className="relative"
               >
-                <div className="absolute -inset-4 bg-sky-500/20 blur-3xl opacity-50 rounded-full" />
-                <GlassCard className="rounded-[40px] p-8 shadow-2xl relative border-[10px] border-slate-900 bg-white" hover>
-                  <div className="flex justify-between items-center mb-8 px-2">
-                    <div className="w-10 h-2.5 bg-slate-200 rounded-full"></div>
-                    <div className="flex gap-1.5">
-                      <div className="w-3.5 h-3.5 bg-slate-200 rounded-full"></div>
-                      <div className="w-3.5 h-3.5 bg-slate-200 rounded-full"></div>
-                    </div>
-                  </div>
-
-                  <div className="text-center mb-8">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">Nomor Antrean Anda</p>
-                    <motion.h3 
-                      initial={{ scale: 0.5, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ type: "spring", damping: 10, stiffness: 100 }}
-                      className="text-8xl font-black text-slate-900 tracking-tighter"
+                <div className="absolute -inset-10 bg-sky-400/20 blur-[120px] rounded-full" />
+                <GlassCard className="rounded-[4rem] p-12 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.2)] bg-white/80 border-white relative overflow-hidden" hover>
+                  <div className="absolute top-0 left-0 w-full h-3 bg-sky-500" />
+                  
+                  <div className="text-center mb-12">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-6">Nomor Antrean Anda</p>
+                    <motion.div
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.3 }}
                     >
-                      A-32
-                    </motion.h3>
-                    <div className="mt-6 flex justify-center">
-                      <div className="px-5 py-2.5 bg-sky-500 text-white rounded-full flex items-center gap-2 text-sm font-black shadow-lg shadow-sky-500/30">
-                        <Clock size={16} />
+                      <h3 className="text-9xl font-black text-slate-900 tracking-tighter mb-4">A-32</h3>
+                      <div className="inline-flex items-center gap-3 px-6 py-3 bg-sky-500 text-white rounded-full font-black text-sm shadow-2xl shadow-sky-500/40">
+                        <Clock size={18} />
                         <span>ESTIMASI: 15 MENIT</span>
                       </div>
+                    </motion.div>
+                  </div>
+                  <div className="bg-white/40 backdrop-blur-3xl p-8 rounded-[3rem] mb-12 flex flex-col items-center border border-white shadow-xl relative group">
+                    <div className="absolute inset-0 bg-gradient-to-tr from-sky-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-[3rem]" />
+                    <div className="bg-white p-6 rounded-3xl shadow-2xl shadow-slate-900/10 border border-white relative">
+                      <QrCode size={140} className="text-slate-900" />
                     </div>
+                    <p className="mt-8 text-[11px] font-black text-slate-900 uppercase tracking-[0.3em] bg-white/50 px-5 py-2 rounded-full border border-white">Scan di Loket</p>
                   </div>
 
-                  <div className="bg-slate-50 p-6 rounded-[32px] mb-8 flex flex-col items-center border border-slate-100 shadow-inner">
-                    <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                      <QrCode size={120} className="text-slate-900" />
+                  <div className="space-y-6 px-4">
+                    <div className="flex justify-between items-center bg-white/30 p-4 rounded-2xl border border-white/40">
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sisa Antrean</span>
+                      <span className="text-2xl font-black text-sky-600">8 Orang</span>
                     </div>
-                    <p className="mt-4 text-[10px] font-black text-slate-400 uppercase tracking-widest underline decoration-2 decoration-sky-300">Scan di Loket</p>
-                  </div>
-
-                  <div className="space-y-4 px-2">
-                    <div className="flex justify-between items-center pt-2">
-                      <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Sisa Antrean</span>
-                      <span className="text-xl font-black text-sky-600">8 Orang</span>
-                    </div>
-                    <div className="flex justify-between items-center py-4 border-y border-slate-100/50">
-                      <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Kategori</span>
-                      <span className="text-sm font-bold text-slate-800">{selectedCategory}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Ambil Tiket</span>
-                      <span className="text-sm font-bold text-slate-800">12:45 WIB</span>
+                    <div className="flex justify-between items-center py-4 border-y border-white/20">
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kategori</span>
+                      <p className="text-sm font-black text-slate-800 uppercase tracking-tight">{selectedCategory}</p>
                     </div>
                   </div>
 
                   <button 
                     onClick={() => setQueueStep('select')}
-                    className="w-full mt-10 py-5 bg-slate-900 text-white rounded-[24px] font-black text-sm tracking-[0.1em] btn-apple"
+                    className="w-full mt-12 py-6 bg-slate-900 text-white rounded-[24px] font-black text-xs uppercase tracking-[0.2em] btn-apple shadow-2xl shadow-slate-900/20"
                   >
-                    BATALKAN ANTREAN
+                    Batalkan Antrean
                   </button>
                   <div className="h-1.5 w-1/3 bg-slate-900 mx-auto rounded-full mt-10 opacity-20"></div>
                 </GlassCard>
@@ -679,84 +760,86 @@ export default function App() {
         </section>
 
         {/* 4. Pusat Bantuan (Support Center) */}
-        <section id="support" className="scroll-mt-24">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
-            <div>
-              <h2 className="text-xs font-bold uppercase tracking-widest text-sky-600 mb-2">Layanan Pelanggan</h2>
-              <h3 className="text-3xl font-extrabold text-slate-800">Pusat Bantuan & AI Support</h3>
-            </div>
+        <section id="support" className="scroll-mt-32">
+          <div className="text-center md:text-left mb-16">
+            <h2 className="text-xs font-black uppercase tracking-[0.3em] text-sky-500 mb-4 px-4 py-1.5 bg-sky-500/10 rounded-full inline-block">Support Center</h2>
+            <h3 className="text-5xl font-black text-slate-900 tracking-tight leading-tight">Solusi di Ujung Jari Anda</h3>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-8">
+          <div className="grid lg:grid-cols-3 gap-10">
             {/* FAQ Search */}
-            <GlassCard className="lg:col-span-2 p-8 border-white/60" hover>
-              <h3 className="text-xl font-black text-slate-800 mb-6">Pertanyaan Populer</h3>
-              <div className="relative mb-8">
+            <GlassCard className="lg:col-span-2 p-10 border-white/60 relative overflow-hidden group shadow-none hover:shadow-2xl transition-all duration-700" hover shadow="none">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-sky-500/5 blur-[100px] rounded-full -mr-32 -mt-32" />
+              <h3 className="text-2xl font-black text-slate-900 mb-10 tracking-tight">Pertanyaan Populer</h3>
+              <div className="relative mb-12">
                 <input 
                   type="text" 
-                  placeholder="Cari kendala Anda..." 
-                  className="w-full h-14 bg-white/50 backdrop-blur-md rounded-2xl px-12 text-sm font-medium border border-white/80 focus:outline-none focus:ring-2 focus:ring-sky-500/20 transition-all"
+                  placeholder="Cari kendala atau bantuan..." 
+                  className="w-full h-16 bg-white/60 backdrop-blur-xl rounded-[1.5rem] px-14 text-sm font-bold border border-white focus:outline-none focus:ring-4 focus:ring-sky-500/10 transition-all placeholder:text-slate-400 shadow-sm"
                 />
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={24} />
               </div>
               
-              <div className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
                 {[
-                  "Bagaimana cara membatalkan antrean?",
-                  "Dapatkah saya mengganti kategori layanan?",
-                  "Berapa lama rata-rata waktu tunggu?",
-                  "Apakah tiket saya akan hangus jika terlewati?"
+                  "Bagaimana membatalkan antrean?",
+                  "Dapatkah mengganti kategori?",
+                  "Rata-rata waktu tunggu?",
+                  "Apakah tiket akan hangus?"
                 ].map((q, i) => (
                   <button 
                     key={i}
-                    className="w-full flex items-center justify-between p-5 bg-white/40 hover:bg-white/60 rounded-2xl border border-white/60 transition-all group"
+                    className="flex items-center justify-between p-6 bg-white/40 hover:bg-white rounded-[2rem] border border-white/80 transition-all group hover:scale-[1.02] shadow-sm active:scale-95"
                   >
-                    <span className="text-sm font-bold text-slate-700">{q}</span>
-                    <ChevronRight size={18} className="text-slate-300 group-hover:text-sky-600 transition-colors" />
+                    <span className="text-xs font-black text-slate-700 uppercase tracking-tight text-left pr-4">{q}</span>
+                    <div className="shrink-0 w-8 h-8 rounded-full bg-slate-900/5 flex items-center justify-center group-hover:bg-slate-900 group-hover:text-white transition-all">
+                      <ChevronRight size={16} />
+                    </div>
                   </button>
                 ))}
               </div>
 
-              <div className="mt-8 flex items-center justify-center gap-2 text-sky-600 font-black text-xs uppercase tracking-widest cursor-pointer hover:underline">
-                Lihat Semua FAQ <ExternalLink size={14} />
+              <div className="mt-12 flex items-center justify-center gap-2 text-sky-600 font-black text-[10px] uppercase tracking-widest cursor-pointer hover:scale-105 transition-transform bg-white/50 border border-white px-8 py-3 rounded-full mx-auto w-fit">
+                Eksplorasi Semua Bantuan <ExternalLink size={14} />
               </div>
             </GlassCard>
 
-            {/* AI Assistant Chat Simulation */}
-            <div className="space-y-6">
-              <GlassCard className="p-8 bg-sky-600 text-white border-transparent shadow-sky-200" hover>
-                <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-6 border border-white/30">
-                  <MessageSquare size={24} />
+            {/* AI Assistant Chat Card */}
+            <div className="space-y-8">
+              <GlassCard className="p-10 bg-slate-900 text-white border-white/20 relative overflow-hidden group shadow-2xl" hover shadow="none">
+                <div className="absolute top-0 right-0 w-48 h-48 bg-sky-500/20 blur-[80px] rounded-full -mr-24 -mt-24 group-hover:bg-sky-500/40 transition-colors" />
+                <div className="w-14 h-14 bg-white/10 rounded-[1.2rem] flex items-center justify-center mb-8 border border-white/30 backdrop-blur-3xl shadow-xl">
+                  <MessageSquare size={28} className="text-sky-400" />
                 </div>
-                <h3 className="text-xl font-black mb-2 tracking-tight">Smart AI Assistant</h3>
-                <p className="text-sky-100 text-sm mb-8 leading-relaxed font-medium">
-                  Butuh bantuan cepat? Hubungkan dengan asisten AI kami untuk menjawab kendala Anda dalam hitungan detik.
+                <h3 className="text-2xl font-black mb-4 tracking-tight">Liquid AI Support</h3>
+                <p className="text-white/60 text-sm mb-10 leading-relaxed font-bold">
+                  Butuh bantuan instan? Chat dengan asisten pintar kami untuk solusi dalam hitungan detik secara 24/7.
                 </p>
                 <button 
                   onClick={() => setIsChatOpen(true)}
-                  className="w-full py-4 bg-white text-sky-600 rounded-2xl font-black text-xs uppercase tracking-widest btn-apple shadow-xl"
+                  className="w-full py-5 bg-white text-slate-900 rounded-[1.5rem] font-black text-xs uppercase tracking-widest btn-apple shadow-2xl shadow-sky-500/20"
                 >
                   Mulai Chat Sekarang
                 </button>
               </GlassCard>
 
-              <GlassCard className="p-8 border-white/60" hover>
-                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Butuh Manusia?</h4>
-                <div className="flex items-center gap-4 mb-6">
+              <GlassCard className="p-10 border-white/60" hover shadow="none">
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Butuh Manusia?</h4>
+                <div className="flex items-center gap-5 mb-8">
                   <div className="relative">
                     <img 
                       src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&h=100&q=80" 
-                      className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
+                      className="w-14 h-14 rounded-full object-cover border-4 border-white shadow-xl"
                       alt="Agent"
                     />
-                    <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></div>
+                    <div className="absolute bottom-1 right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
                   </div>
                   <div>
-                    <p className="text-sm font-black text-slate-800">Sarah Wijaya</p>
-                    <p className="text-[10px] text-slate-400 font-bold">Admin Beroperasi</p>
+                    <p className="text-lg font-black text-slate-900 tracking-tight">Sarah Wijaya</p>
+                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Admin Beroperasi</p>
                   </div>
                 </div>
-                <button className="w-full py-3 border-2 border-slate-100 text-slate-500 rounded-xl font-bold text-[11px] uppercase tracking-widest hover:bg-slate-50 transition-all">
+                <button className="w-full py-4 bg-white/50 border border-white text-slate-900 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-white transition-all shadow-sm">
                   Hubungi Admin
                 </button>
               </GlassCard>
@@ -778,29 +861,31 @@ export default function App() {
       </AnimatePresence>
 
       {/* Footer */}
-      <footer className="glass-nav py-16 text-center mt-20">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8 mb-12">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-sky-600 rounded-lg flex items-center justify-center text-white">
-                <Layers size={18} />
+      <footer className="glass-nav py-20 mt-32 border-t border-white/20">
+        <div className="max-w-7xl mx-auto px-10">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-12 mb-20">
+            <div className="flex items-center gap-3 group cursor-pointer">
+              <div className="w-11 h-11 bg-slate-900 rounded-[14px] flex items-center justify-center text-white shadow-2xl transition-transform duration-500">
+                <Layers size={22} />
               </div>
-              <span className="text-lg font-bold tracking-tight">Smart<span className="text-sky-600">Queue</span></span>
+              <span className="text-2xl font-black tracking-tighter text-slate-900">Smart<span className="text-sky-500">Queue</span></span>
             </div>
-            <div className="flex gap-8 text-sm font-bold text-slate-500 uppercase tracking-widest">
-              <a href="#" className="hover:text-sky-600">Tentang Kami</a>
-              <a href="#" className="hover:text-sky-600">Pusat Bantuan</a>
-              <a href="#" className="hover:text-sky-600">Kebijakan Privasi</a>
+            <div className="flex flex-wrap justify-center gap-10 text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">
+              <a href="#" className="hover:text-sky-600 transition-colors">Tentang Kami</a>
+              <a href="#" className="hover:text-sky-600 transition-colors">Pusat Bantuan</a>
+              <a href="#" className="hover:text-sky-600 transition-colors">Kebijakan Privasi</a>
             </div>
-            <div className="flex gap-4">
+            <div className="flex gap-5">
               <SocialIcon><i className="fab fa-instagram"></i></SocialIcon>
               <SocialIcon><i className="fab fa-twitter"></i></SocialIcon>
               <SocialIcon><i className="fab fa-facebook"></i></SocialIcon>
             </div>
           </div>
-          <p className="text-slate-400 text-xs font-medium border-t border-slate-200 pt-8">
-            &copy; 2026 Smart Queue Digital System. Didesain dengan ❤️ untuk UMKM Indonesia.
-          </p>
+          <div className="pt-10 border-t border-slate-900/5">
+            <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] leading-relaxed">
+              &copy; 2026 Smart Queue Digital System • Crafting Premium Experience for Modern Business
+            </p>
+          </div>
         </div>
       </footer>
     </div>
@@ -856,37 +941,37 @@ const AIChatModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md"
     >
       <motion.div
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
-        className="bg-white w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl flex flex-col h-[600px] border border-slate-100"
+        className="glass-card w-full max-w-md rounded-[3rem] overflow-hidden flex flex-col h-[650px] border-white/60"
       >
-        <div className="p-6 bg-sky-600 text-white flex justify-between items-center shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center border border-white/20">
+        <div className="p-8 bg-slate-900/10 backdrop-blur-xl flex justify-between items-center shrink-0 border-b border-white/20">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-slate-900 rounded-[14px] flex items-center justify-center text-white">
               <MessageSquare size={22} />
             </div>
             <div>
-              <p className="font-black text-sm tracking-tight">AI SUPPORT</p>
-              <div className="flex items-center gap-1.5">
-                <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
-                <p className="text-[10px] font-bold text-sky-100 uppercase tracking-widest">Online Sekarang</p>
+              <p className="font-black text-sm tracking-tight text-slate-900 px-3 py-1 bg-white/50 rounded-full inline-block">AI SUPPORT</p>
+              <div className="flex items-center gap-2 mt-1">
+                <div className="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Liquid Assistant</p>
               </div>
             </div>
           </div>
-          <button onClick={onClose} className="hover:bg-white/10 p-2 rounded-xl transition-colors">
-            <X size={20} />
+          <button onClick={onClose} className="bg-slate-900/5 hover:bg-slate-900/10 p-3 rounded-2xl transition-all">
+            <X size={20} className="text-slate-900" />
           </button>
         </div>
 
-        <div className="flex-grow overflow-y-auto p-6 space-y-4 custom-scrollbar bg-slate-50/50">
+        <div className="flex-grow overflow-y-auto p-8 space-y-6 custom-scrollbar bg-white/10">
           {messages.map((msg, i) => (
             <motion.div
-              initial={{ opacity: 0, x: msg.role === 'user' ? 10 : -10 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
               key={i}
               className={cn(
                 "flex flex-col max-w-[85%]",
@@ -894,44 +979,32 @@ const AIChatModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void
               )}
             >
               <div className={cn(
-                "p-4 rounded-2xl text-sm font-medium shadow-sm",
+                "p-5 rounded-[2rem] text-sm font-bold shadow-sm backdrop-blur-xl",
                 msg.role === 'user' 
-                  ? "bg-sky-600 text-white rounded-br-none" 
-                  : "bg-white text-slate-700 border border-slate-100 rounded-bl-none"
+                  ? "bg-slate-900 text-white rounded-br-none" 
+                  : "bg-white/60 text-slate-800 border border-white/80 rounded-bl-none shadow-xl"
               )}>
                 {msg.content}
               </div>
-              <span className="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-widest px-1">
-                {msg.role === 'assistant' ? 'Smart Bot' : 'Anda'}
-              </span>
             </motion.div>
           ))}
-          {isTyping && (
-            <div className="flex flex-col max-w-[85%] mr-auto items-start">
-              <div className="p-4 rounded-2xl bg-white text-slate-700 border border-slate-100 rounded-bl-none shadow-sm flex gap-1">
-                <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1, repeat: Infinity }} className="w-1.5 h-1.5 bg-slate-400 rounded-full" />
-                <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1, repeat: Infinity, delay: 0.2 }} className="w-1.5 h-1.5 bg-slate-400 rounded-full" />
-                <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1, repeat: Infinity, delay: 0.4 }} className="w-1.5 h-1.5 bg-slate-400 rounded-full" />
-              </div>
-            </div>
-          )}
         </div>
 
-        <div className="p-6 bg-white border-t border-slate-100">
-          <div className="relative flex items-center gap-2">
+        <div className="p-8 bg-white/30 backdrop-blur-2xl border-t border-white/20">
+          <div className="relative flex items-center gap-3">
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Ketik pesan Anda..."
-              className="w-full h-12 bg-slate-50 rounded-2xl px-5 text-sm font-bold border border-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500/20 transition-all"
+              placeholder="Apa yang ingin Anda tanyakan?"
+              className="w-full h-14 bg-white/60 backdrop-blur-md rounded-[1.5rem] px-6 text-sm font-bold border border-white focus:outline-none focus:ring-4 focus:ring-sky-500/10 transition-all placeholder:text-slate-400"
             />
             <button 
               onClick={handleSend}
-              className="bg-sky-600 text-white w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-sky-500/20 active:scale-95 transition-all"
+              className="bg-slate-900 text-white w-14 h-14 rounded-[1.5rem] flex items-center justify-center shrink-0 shadow-2xl shadow-slate-900/20 active:scale-90 transition-all"
             >
-              <Send size={18} />
+              <Send size={20} />
             </button>
           </div>
         </div>
@@ -961,33 +1034,37 @@ const LoginModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-white/95 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-white/60 backdrop-blur-xl"
     >
       <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
-        className="w-full max-w-sm flex flex-col items-center text-center relative"
+        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 20 }}
+        className="w-full max-w-sm glass-card p-12 flex flex-col items-center text-center relative border-white/80 rounded-[3.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] bg-white/40"
       >
         <button 
           onClick={onClose}
-          className="absolute -top-12 right-0 p-2 text-slate-400 hover:text-slate-600 transition-colors"
+          className="absolute top-8 right-8 p-3 bg-slate-900/5 hover:bg-slate-900/10 rounded-full text-slate-900 transition-all active:scale-90"
         >
-          <X size={24} />
+          <X size={20} />
         </button>
 
-        <h2 className="text-4xl font-black text-slate-900 mb-12">
+        <div className="w-16 h-16 bg-slate-900 rounded-[1.2rem] flex items-center justify-center text-white mb-8 shadow-2xl">
+          <User size={32} />
+        </div>
+
+        <h2 className="text-4xl font-black text-slate-900 mb-2 tracking-tight">
           {view === 'login' ? 'Masuk' : 'Daftar'}
         </h2>
+        <p className="text-slate-500 font-bold text-sm mb-12 uppercase tracking-widest">Akses Akun Smart Queue</p>
 
-        <form onSubmit={handleSubmit} className="w-full">
-          <div className="w-full space-y-4 mb-2">
+        <form onSubmit={handleSubmit} className="w-full space-y-5">
             <div className="relative">
               <input 
                 required
                 type="text" 
-                placeholder="Email atau no. handphone" 
-                className="w-full h-14 px-5 border border-slate-300 rounded-lg text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 transition-all font-medium"
+                placeholder="Email atau No. Handphone" 
+                className="w-full h-16 px-6 bg-white/60 backdrop-blur-md rounded-[1.2rem] border border-white focus:outline-none focus:ring-4 focus:ring-sky-500/10 transition-all font-bold text-slate-900 shadow-sm placeholder:text-slate-400"
               />
             </div>
             
@@ -996,12 +1073,12 @@ const LoginModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void 
                 required
                 type={showPassword ? "text" : "password"}
                 placeholder="Password" 
-                className="w-full h-14 px-5 border border-slate-300 rounded-lg text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 transition-all font-medium"
+                className="w-full h-16 px-6 bg-white/60 backdrop-blur-md rounded-[1.2rem] border border-white focus:outline-none focus:ring-4 focus:ring-sky-500/10 transition-all font-bold text-slate-900 shadow-sm placeholder:text-slate-400"
               />
               <button 
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900 transition-colors"
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
@@ -1013,24 +1090,21 @@ const LoginModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void 
                   required
                   type="password"
                   placeholder="Konfirmasi Password" 
-                  className="w-full h-14 px-5 border border-slate-300 rounded-lg text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 transition-all font-medium"
+                  className="w-full h-16 px-6 bg-white/60 backdrop-blur-md rounded-[1.2rem] border border-white focus:outline-none focus:ring-4 focus:ring-sky-500/10 transition-all font-bold text-slate-900 shadow-sm placeholder:text-slate-400"
                 />
               </div>
             )}
-          </div>
 
-          <div className="w-full text-left mb-16">
-            {view === 'login' && (
-              <button type="button" className="text-sky-600 font-bold text-sm hover:underline">
-                Lupa password?
-              </button>
-            )}
-          </div>
+            <div className="text-right">
+                <button type="button" className="text-sky-600 font-black text-[11px] uppercase tracking-widest hover:underline px-2">
+                    Lupa password?
+                </button>
+            </div>
 
-          <button 
+           <button 
             disabled={isLoading}
             className={cn(
-              "w-1/2 h-14 bg-[#007AFF] text-white rounded-[40px] font-bold text-sm tracking-wide shadow-lg shadow-blue-500/20 active:scale-95 transition-all mb-6 flex items-center justify-center mx-auto",
+              "w-full h-16 bg-slate-900 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-2xl shadow-slate-900/20 active:scale-95 transition-all mt-6 flex items-center justify-center",
               isLoading && "opacity-70 cursor-not-allowed"
             )}
           >
@@ -1038,20 +1112,22 @@ const LoginModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void 
               <motion.div 
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
+                className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full"
               />
             ) : (
-              view === 'login' ? 'Masuk' : 'Daftar'
+                view === 'login' ? 'MULAI SEKARANG' : 'DAFTAR SEKARANG'
             )}
           </button>
         </form>
 
-        <button 
-          onClick={() => setView(view === 'login' ? 'register' : 'login')}
-          className="text-[#007AFF] font-bold text-sm hover:underline"
-        >
-          {view === 'login' ? 'Daftar akun' : 'Sudah punya akun? Masuk'}
-        </button>
+        <div className="mt-10 pt-8 border-t border-slate-900/5 w-full">
+            <button 
+                onClick={() => setView(view === 'login' ? 'register' : 'login')}
+                className="text-slate-500 font-bold text-xs uppercase tracking-widest hover:text-sky-600 transition-colors"
+            >
+                {view === 'login' ? 'Belum punya akun? Daftar' : 'Sudah punya akun? Masuk'}
+            </button>
+        </div>
       </motion.div>
     </motion.div>
   );
