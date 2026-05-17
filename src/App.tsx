@@ -89,30 +89,57 @@ const STAFF_PERFORMANCE = [
 
 const MOCK_INSTITUTIONS = [
   { 
+    id: 'inst-gacoan', 
+    name: 'Mie Gacoan Pangkalpinang', 
+    type: 'Kuliner',
+    address: 'Jl. Ahmad Yani, Pangkalpinang',
+    distance: '0.5 km',
+    services: ['Dine In', 'Take Away', 'Delivery'],
+    image: 'https://images.unsplash.com/photo-1552566626-52f86458a1db?auto=format&fit=crop&w=400&q=80'
+  },
+  { 
     id: 'inst-1', 
-    name: 'Puskesmas Kecamatan Gambir', 
+    name: 'RSUD Depati Hamzah', 
     type: 'Kesehatan',
-    address: 'Jl. Tanah Abang I No.10, Jakarta Pusat',
-    distance: '0.8 km',
-    services: ['Poli Umum', 'Poli Gigi', 'Vaksinasi', 'KIA'],
+    address: 'Jl. Soekarno Hatta, Pangkalpinang',
+    distance: '1.2 km',
+    services: ['UGD', 'Poli Spesialis', 'Radiologi', 'Farmasi'],
     image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=400&q=80'
   },
   { 
+    id: 'inst-transmart', 
+    name: 'Transmart Pangkalpinang', 
+    type: 'Retail',
+    address: 'Jl. Jend. Sudirman, Pangkalpinang',
+    distance: '2.1 km',
+    services: ['Belanja', 'Trans Studio Mini', 'Food Court'],
+    image: 'https://images.unsplash.com/photo-1534452203294-493d1353e124?auto=format&fit=crop&w=400&q=80'
+  },
+  { 
     id: 'inst-2', 
-    name: 'Bank BNI Cabang Jakarta', 
+    name: 'BCA Cabang Pangkalpinang', 
     type: 'Perbankan',
-    address: 'Jl. Jend. Sudirman No.1, Jakarta Pusat',
-    distance: '1.2 km',
-    services: ['Customer Service', 'Teller', 'Pembukaan Rekening', 'Pinjaman'],
+    address: 'Jl. Jendral Sudirman No. 15, Pangkalpinang',
+    distance: '0.8 km',
+    services: ['Customer Service', 'Teller', 'Kredit Pembukaan'],
     image: 'https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?auto=format&fit=crop&w=400&q=80'
   },
   { 
+    id: 'inst-mcd', 
+    name: 'McDonald\'s Pangkalpinang', 
+    type: 'Kuliner',
+    address: 'Jl. Jendral Sudirman, Pangkalpinang',
+    distance: '1.5 km',
+    services: ['Dine In', 'Drive Thru', 'McCafe'],
+    image: 'https://images.unsplash.com/photo-1552566626-52f86458a1db?auto=format&fit=crop&w=400&q=80'
+  },
+  { 
     id: 'inst-3', 
-    name: 'Kantor Pajak Pratama', 
+    name: 'Disdukcapil Kota Pangkalpinang', 
     type: 'Pemerintahan',
-    address: 'Jl. Ridwan Rais No.5, Jakarta Pusat',
-    distance: '2.5 km',
-    services: ['Lapor SPT', 'Konsultasi Pajak', 'NPWP Baru', 'PBB'],
+    address: 'Jl. Rasakunda No. 1, Pangkalpinang',
+    distance: '3.2 km',
+    services: ['KTP-el', 'Akta Kelahiran', 'Kartu Keluarga'],
     image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=400&q=80'
   },
 ];
@@ -350,7 +377,7 @@ const BottomNavItem = ({ href, icon, label, active, onClick }: { href: string; i
     whileTap={{ scale: 0.92 }}
     className={cn(
       "relative flex flex-col items-center justify-center gap-0.5 transition-all duration-500 flex-shrink-0 group py-1 w-16 sm:w-20 h-12 sm:h-14",
-      active ? "text-slate-950 font-black" : "text-white hover:text-white/80"
+      active ? "text-slate-950 font-black" : "text-sky-400 hover:text-sky-300"
     )}
   >
     {active && (
@@ -1192,15 +1219,16 @@ const PaymentModal = ({ isOpen, onClose, plan }: { isOpen: boolean, onClose: () 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <motion.div
         initial={{ scale: 0.9, y: 30, opacity: 0 }}
         animate={{ scale: 1, y: 0, opacity: 1 }}
         exit={{ scale: 0.9, y: 30, opacity: 0 }}
-        className="w-full max-w-4xl glass-card overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] bg-white/60 border-white/80 rounded-[3rem]"
+        className="w-full max-w-3xl glass-card overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] bg-white/60 border-white/80 rounded-[2.5rem]"
       >
-        <div className="flex flex-col md:flex-row min-h-[600px]">
+        <div className="flex flex-col md:flex-row min-h-[500px]">
           {/* Sidebar / Plan Info */}
           <div className={cn(
             "md:w-2/5 p-12 flex flex-col justify-between relative overflow-hidden transition-colors duration-1000 shrink-0",
