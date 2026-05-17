@@ -6,6 +6,12 @@
 import React, { useState, useEffect, useRef, ReactNode } from 'react';
 import { motion, AnimatePresence, useScroll, useSpring } from 'motion/react';
 import { 
+  ArrowRight,
+  Zap,
+  ShieldCheck,
+  Wallet,
+  Smartphone,
+  CreditCard,
   HelpCircle,
   Search,
   ExternalLink,
@@ -108,6 +114,33 @@ const MOCK_INSTITUTIONS = [
     distance: '2.5 km',
     services: ['Lapor SPT', 'Konsultasi Pajak', 'NPWP Baru', 'PBB'],
     image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=400&q=80'
+  },
+];
+
+const PLANS = [
+  { 
+    id: 'starter', 
+    name: 'Starter', 
+    price: 'Rp 20.000', 
+    rawPrice: 20000,
+    features: ['1 Loket Aktif', '100 Antrean / Hari', 'Support Email'],
+    highlight: false
+  },
+  { 
+    id: 'pro', 
+    name: 'Pro Business', 
+    price: 'Rp 50.000', 
+    rawPrice: 50000,
+    features: ['5 Loket Aktif', 'Antrean Tanpa Batas', 'Support 24/7', 'Custom Branding'],
+    highlight: true
+  },
+  { 
+    id: 'enterprise', 
+    name: 'Enterprise', 
+    price: 'Rp 100.000', 
+    rawPrice: 100000,
+    features: ['Unlimited Loket', 'Support Prioritas', 'API Access', 'Dedicated Manager'],
+    highlight: false
   },
 ];
 
@@ -356,6 +389,8 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<typeof PLANS[0] | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedInstitution, setSelectedInstitution] = useState<typeof MOCK_INSTITUTIONS[0] | null>(null);
 
@@ -517,68 +552,58 @@ export default function App() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-10">
-            {/* Plan 1 */}
-            <GlassCard className="p-10 flex flex-col items-center border-white/60 relative overflow-hidden group shadow-none hover:shadow-2xl transition-all duration-700" hover>
-              <h4 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-6">Starter</h4>
-              <div className="flex items-baseline gap-1 mb-10">
-                <span className="text-5xl font-black text-slate-900 tracking-tighter">Rp 20k</span>
-                <span className="text-slate-400 text-sm font-bold">/ bln</span>
-              </div>
-              <ul className="space-y-6 mb-12 w-full">
-                <li className="flex items-center gap-4 text-sm text-slate-600 font-bold">
-                  <CheckCircle2 size={20} className="text-sky-500 shrink-0" /> 1 Loket Aktif
-                </li>
-                <li className="flex items-center gap-4 text-sm text-slate-600 font-bold">
-                  <CheckCircle2 size={20} className="text-sky-500 shrink-0" /> 100 Antrean / Hari
-                </li>
-              </ul>
-              <button className="w-full py-5 bg-slate-900 text-white rounded-[24px] font-black text-xs uppercase tracking-widest btn-apple mt-auto">
-                Pilih Paket
-              </button>
-            </GlassCard>
-
-            {/* Plan 2 */}
-            <GlassCard className="p-10 flex flex-col items-center border-white/80 ring-2 ring-sky-500/20 relative overflow-hidden group bg-white/40 shadow-2xl shadow-sky-500/10" hover>
-              <div className="absolute top-0 right-0 bg-sky-500 text-white px-6 py-2 text-[10px] font-black uppercase tracking-[0.2em] rounded-bl-3xl">
-                Terpopuler
-              </div>
-              <h4 className="text-sm font-black text-sky-600 uppercase tracking-[0.2em] mb-6 font-black">Pro Business</h4>
-              <div className="flex items-baseline gap-1 mb-10">
-                <span className="text-6xl font-black text-slate-900 tracking-tighter">Rp 50k</span>
-                <span className="text-slate-400 text-sm font-bold">/ bln</span>
-              </div>
-              <ul className="space-y-6 mb-12 w-full">
-                <li className="flex items-center gap-4 text-sm text-slate-800 font-black">
-                  <CheckCircle2 size={20} className="text-sky-500 shrink-0" /> 5 Loket Aktif
-                </li>
-                <li className="flex items-center gap-4 text-sm text-slate-800 font-black">
-                  <CheckCircle2 size={20} className="text-sky-500 shrink-0" /> Antrean Tanpa Batas
-                </li>
-              </ul>
-              <button className="w-full py-5 bg-sky-600 text-white rounded-[24px] font-black text-xs uppercase tracking-widest btn-apple mt-auto shadow-2xl shadow-sky-600/30">
-                Mulai Berlangganan
-              </button>
-            </GlassCard>
-
-            {/* Plan 3 */}
-            <GlassCard className="p-10 flex flex-col items-center border-white/60 relative overflow-hidden group" hover>
-              <h4 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-6">Enterprise</h4>
-              <div className="flex items-baseline gap-1 mb-10">
-                <span className="text-5xl font-black text-slate-900 tracking-tighter">Rp 100k</span>
-                <span className="text-slate-400 text-sm font-bold">/ bln</span>
-              </div>
-              <ul className="space-y-6 mb-12 w-full">
-                <li className="flex items-center gap-4 text-sm text-slate-600 font-bold">
-                  <CheckCircle2 size={20} className="text-sky-500 shrink-0" /> Unlimited Loket
-                </li>
-                <li className="flex items-center gap-4 text-sm text-slate-600 font-bold">
-                  <CheckCircle2 size={20} className="text-sky-500 shrink-0" /> Support Prioritas
-                </li>
-              </ul>
-              <button className="w-full py-5 bg-slate-900 text-white rounded-[24px] font-black text-xs uppercase tracking-widest btn-apple mt-auto">
-                Hubungi Kami
-              </button>
-            </GlassCard>
+            {PLANS.map((plan) => (
+              <GlassCard 
+                key={plan.id}
+                className={cn(
+                  "p-10 flex flex-col items-center relative overflow-hidden group transition-all duration-700",
+                  plan.highlight 
+                    ? "border-white/80 ring-2 ring-sky-500/20 bg-white/40 shadow-2xl shadow-sky-500/10" 
+                    : "border-white/60 shadow-none hover:shadow-2xl"
+                )} 
+                hover
+              >
+                {plan.highlight && (
+                  <div className="absolute top-0 right-0 bg-sky-500 text-white px-6 py-2 text-[10px] font-black uppercase tracking-[0.2em] rounded-bl-3xl">
+                    Terpopuler
+                  </div>
+                )}
+                <h4 className={cn(
+                  "text-sm font-black uppercase tracking-[0.2em] mb-6",
+                  plan.highlight ? "text-sky-600" : "text-slate-400"
+                )}>
+                  {plan.name}
+                </h4>
+                <div className="flex items-baseline gap-1 mb-10">
+                  <span className="text-5xl lg:text-6xl font-black text-slate-900 tracking-tighter">{plan.price.replace('.000', 'k')}</span>
+                  <span className="text-slate-400 text-sm font-bold">/ bln</span>
+                </div>
+                <ul className="space-y-6 mb-12 w-full">
+                  {plan.features.map((feature) => (
+                    <li key={feature} className={cn(
+                        "flex items-center gap-4 text-sm font-bold",
+                        plan.highlight ? "text-slate-800" : "text-slate-600"
+                      )}>
+                      <CheckCircle2 size={20} className="text-sky-500 shrink-0" /> {feature}
+                    </li>
+                  ))}
+                </ul>
+                <button 
+                  onClick={() => {
+                    setSelectedPlan(plan);
+                    setIsPaymentOpen(true);
+                  }}
+                  className={cn(
+                    "w-full py-5 rounded-[24px] font-black text-xs uppercase tracking-widest btn-apple mt-auto",
+                    plan.highlight 
+                      ? "bg-sky-600 text-white shadow-2xl shadow-sky-600/30" 
+                      : "bg-slate-900 text-white shadow-2xl shadow-slate-900/20"
+                  )}
+                >
+                  Mulai Berlangganan
+                </button>
+              </GlassCard>
+            ))}
           </div>
         </section>
 
@@ -860,6 +885,16 @@ export default function App() {
         )}
       </AnimatePresence>
 
+      <AnimatePresence>
+        {isPaymentOpen && selectedPlan && (
+          <PaymentModal 
+            isOpen={isPaymentOpen} 
+            onClose={() => setIsPaymentOpen(false)} 
+            plan={selectedPlan}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Footer */}
       <footer className="glass-nav py-20 mt-32 border-t border-white/20">
         <div className="max-w-7xl mx-auto px-10">
@@ -1127,6 +1162,254 @@ const LoginModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void 
             >
                 {view === 'login' ? 'Belum punya akun? Daftar' : 'Sudah punya akun? Masuk'}
             </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+const PaymentModal = ({ isOpen, onClose, plan }: { isOpen: boolean, onClose: () => void, plan: typeof PLANS[0] }) => {
+  const [step, setStep] = useState<'checkout' | 'processing' | 'success'>('checkout');
+  const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
+
+  const methods = [
+    { id: 'gopay', name: 'GoPay', icon: <Smartphone size={24} /> },
+    { id: 'ovo', name: 'OVO', icon: <Smartphone size={24} /> },
+    { id: 'va', name: 'Virtual Account', icon: <Zap size={24} /> },
+    { id: 'card', name: 'Kartu Kredit', icon: <CreditCard size={24} /> },
+  ];
+
+  const handlePayment = () => {
+    if (!paymentMethod) return;
+    setStep('processing');
+    setTimeout(() => {
+      setStep('success');
+    }, 3000);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xl"
+    >
+      <motion.div
+        initial={{ scale: 0.9, y: 30, opacity: 0 }}
+        animate={{ scale: 1, y: 0, opacity: 1 }}
+        exit={{ scale: 0.9, y: 30, opacity: 0 }}
+        className="w-full max-w-4xl glass-card overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] bg-white/60 border-white/80 rounded-[3rem]"
+      >
+        <div className="flex flex-col md:flex-row min-h-[600px]">
+          {/* Sidebar / Plan Info */}
+          <div className={cn(
+            "md:w-2/5 p-12 flex flex-col justify-between relative overflow-hidden transition-colors duration-1000 shrink-0",
+            step === 'success' ? "bg-emerald-600 text-white" : "bg-slate-900 text-white"
+          )}>
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-16">
+                <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 backdrop-blur-3xl">
+                  <Layers size={24} />
+                </div>
+                <span className="font-black tracking-tighter text-2xl uppercase">Smart<span className="text-sky-400">Queue</span></span>
+              </div>
+
+              <div className="mb-12">
+                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-3">Paket Konfirmasi</p>
+                <h3 className="text-4xl font-black tracking-tighter leading-none">{plan.name}</h3>
+              </div>
+
+              <div className="space-y-6">
+                {plan.features.map(f => (
+                  <div key={f} className="flex items-center gap-4 text-sm font-bold text-white/70">
+                    <CheckCircle2 size={20} className={cn(step === 'success' ? "text-white" : "text-sky-400")} /> {f}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="relative z-10 pt-12 border-t border-white/10 mt-12">
+              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-2">Total Penagihan</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-5xl font-black tracking-tighter">{plan.price}</span>
+                <span className="text-white/40 text-sm font-bold">/ bln</span>
+              </div>
+              <p className="text-[9px] font-bold text-white/30 mt-3">*Harga sudah termasuk PPN 11%</p>
+            </div>
+
+            <div className="absolute top-0 right-0 w-80 h-80 bg-sky-500/30 blur-[120px] rounded-full -mr-40 -mt-40" />
+            <div className="absolute bottom-0 left-0 w-80 h-80 bg-indigo-500/20 blur-[120px] rounded-full -ml-40 -mb-40" />
+          </div>
+
+          {/* Main Content Area */}
+          <div className="md:w-3/5 p-12 bg-white/50 relative flex flex-col">
+            {step === 'checkout' && (
+              <button 
+                onClick={onClose}
+                className="absolute top-10 right-10 p-3 bg-slate-900/5 hover:bg-slate-900/10 rounded-full transition-all active:scale-90"
+              >
+                <X size={24} className="text-slate-900" />
+              </button>
+            )}
+
+            <AnimatePresence mode="wait">
+              {step === 'checkout' && (
+                <motion.div
+                  key="checkout"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="h-full flex flex-col"
+                >
+                  <h3 className="text-3xl font-black text-slate-900 mb-2 tracking-tight">Metode Pembayaran</h3>
+                  <p className="text-slate-400 text-xs font-black uppercase tracking-[0.2em] mb-12">Pilih salah satu akses Anda untuk memproses</p>
+
+                  <div className="grid grid-cols-1 gap-5 flex-grow">
+                    {methods.map(m => (
+                      <button
+                        key={m.id}
+                        onClick={() => setPaymentMethod(m.id)}
+                        className={cn(
+                          "w-full p-6 rounded-[2rem] border-2 flex items-center gap-6 transition-all group overflow-hidden relative",
+                          paymentMethod === m.id 
+                            ? "bg-white border-sky-500 shadow-2xl ring-8 ring-sky-500/5 scale-[1.02]" 
+                            : "bg-white/40 border-white hover:bg-white hover:border-slate-200"
+                        )}
+                      >
+                        <div className={cn(
+                          "w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-700 shadow-inner",
+                          paymentMethod === m.id ? "bg-sky-500 text-white" : "bg-slate-50 text-slate-400"
+                        )}>
+                          {React.cloneElement(m.icon as React.ReactElement, { className: paymentMethod === m.id ? "text-white" : "" })}
+                        </div>
+                        <span className={cn("font-black text-lg tracking-tight uppercase", paymentMethod === m.id ? "text-slate-900" : "text-slate-400")}>
+                          {m.name}
+                        </span>
+                        {paymentMethod === m.id && (
+                          <motion.div 
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="ml-auto w-8 h-8 rounded-full bg-sky-500 flex items-center justify-center text-white shadow-lg"
+                          >
+                            <CheckCircle2 size={16} />
+                          </motion.div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="mt-12 p-6 bg-slate-900/5 rounded-[2rem] border border-white flex items-center gap-4">
+                    <ShieldCheck size={24} className="text-sky-500 shrink-0" />
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-relaxed">
+                      Transaksi Anda dienkripsi dengan standar keamanan 256-bit SSL untuk perlindungan maksimal.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col gap-4 mt-8">
+                    <button 
+                      disabled={!paymentMethod}
+                      onClick={handlePayment}
+                      className={cn(
+                        "w-full py-6 rounded-[2rem] font-black text-sm uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-3 shadow-2xl",
+                        paymentMethod 
+                          ? "bg-slate-900 text-white shadow-slate-900/30 active:scale-95 btn-apple" 
+                          : "bg-slate-100 text-slate-300 cursor-not-allowed"
+                      )}
+                    >
+                      Proses Pembayaran <ArrowRight size={20} />
+                    </button>
+                    
+                    <button 
+                      onClick={onClose}
+                      className="w-full py-4 text-slate-400 font-black text-[10px] uppercase tracking-[0.3em] hover:text-slate-900 transition-colors"
+                    >
+                      Kembali ke Beranda
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {step === 'processing' && (
+                <motion.div
+                  key="processing"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.1 }}
+                  className="h-full flex flex-col items-center justify-center text-center py-20"
+                >
+                  <div className="relative w-40 h-40 mb-12">
+                    <motion.div 
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                      className="absolute inset-0 border-[6px] border-slate-100 border-t-sky-500 rounded-full"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <motion.div
+                        animate={{ scale: [1, 1.1, 1] }}
+                        transition={{ duration: 1, repeat: Infinity }}
+                      >
+                         <ShieldCheck size={64} className="text-sky-500" />
+                      </motion.div>
+                    </div>
+                  </div>
+                  <h3 className="text-4xl font-black text-slate-900 mb-6 tracking-tight uppercase">Mengamankan Transaksi</h3>
+                  <p className="text-slate-500 font-bold text-lg max-w-sm leading-relaxed">Kami sedang mengomunikasikan detail pembayaran Anda dengan gerbang pembayaran yang aman...</p>
+                </motion.div>
+              )}
+
+              {step === 'success' && (
+                <motion.div
+                  key="success"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="h-full flex flex-col items-center justify-center text-center py-10"
+                >
+                  <motion.div 
+                    initial={{ scale: 0, rotate: -45 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ type: "spring", bounce: 0.5, delay: 0.2 }}
+                    className="w-32 h-32 bg-emerald-500 text-white rounded-[2.5rem] flex items-center justify-center mb-12 shadow-[0_30px_60px_rgba(16,185,129,0.3)] rotate-12"
+                  >
+                    <CheckCircle2 size={64} />
+                  </motion.div>
+                  <h3 className="text-5xl font-black text-slate-900 mb-6 tracking-tighter uppercase leading-none">Pembayaran<br />Berhasil!</h3>
+                  <p className="text-slate-500 font-bold text-lg mb-14 max-w-sm leading-relaxed">
+                    Selamat! Akun bisnis Anda telah aktif dengan paket <span className="text-sky-600 font-black uppercase">{plan.name}</span>. Nikmati kendali penuh sekarang.
+                  </p>
+                  
+                  <div className="flex flex-col gap-4 w-full max-w-sm">
+                    <button 
+                      onClick={onClose}
+                      className="w-full py-6 bg-slate-900 text-white rounded-[2rem] font-black text-sm uppercase tracking-[0.3em] shadow-2xl shadow-slate-900/30 active:scale-95 btn-apple"
+                    >
+                      Masuk ke Dashboard Bisnis
+                    </button>
+                    <button 
+                      onClick={onClose}
+                      className="w-full py-4 text-slate-400 font-black text-[10px] uppercase tracking-[0.3em] hover:text-slate-900 transition-colors"
+                    >
+                      Kembali ke Beranda
+                    </button>
+                  </div>
+                  
+                  <div className="mt-12 pt-10 border-t border-slate-200/50 w-full flex justify-center gap-12">
+                    <div className="text-center">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Invoice</p>
+                      <p className="text-sm font-black text-slate-900 tracking-tight">INV-SQ-0092</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Metode</p>
+                      <p className="text-sm font-black text-sky-600 tracking-tight uppercase">{paymentMethod}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Waktu (WIB)</p>
+                      <p className="text-sm font-black text-slate-900 tracking-tight">Baru Saja</p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </motion.div>
     </motion.div>
