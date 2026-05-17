@@ -95,7 +95,7 @@ const MOCK_INSTITUTIONS = [
     address: 'Jl. Ahmad Yani, Pangkalpinang',
     distance: '0.5 km',
     services: ['Dine In', 'Take Away', 'Delivery'],
-    image: 'https://images.unsplash.com/photo-1552566626-52f86458a1db?auto=format&fit=crop&w=400&q=80'
+    image: 'https://images.unsplash.com/photo-1552566626-52f86458a1db?auto=format&fit=crop&w=800&q=80'
   },
   { 
     id: 'inst-1', 
@@ -104,7 +104,7 @@ const MOCK_INSTITUTIONS = [
     address: 'Jl. Soekarno Hatta, Pangkalpinang',
     distance: '1.2 km',
     services: ['UGD', 'Poli Spesialis', 'Radiologi', 'Farmasi'],
-    image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=400&q=80'
+    image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80'
   },
   { 
     id: 'inst-transmart', 
@@ -113,7 +113,7 @@ const MOCK_INSTITUTIONS = [
     address: 'Jl. Jend. Sudirman, Pangkalpinang',
     distance: '2.1 km',
     services: ['Belanja', 'Trans Studio Mini', 'Food Court'],
-    image: 'https://images.unsplash.com/photo-1534452203294-493d1353e124?auto=format&fit=crop&w=400&q=80'
+    image: 'https://images.unsplash.com/photo-1534452203294-493d1353e124?auto=format&fit=crop&w=800&q=80'
   },
   { 
     id: 'inst-2', 
@@ -122,7 +122,7 @@ const MOCK_INSTITUTIONS = [
     address: 'Jl. Jendral Sudirman No. 15, Pangkalpinang',
     distance: '0.8 km',
     services: ['Customer Service', 'Teller', 'Kredit Pembukaan'],
-    image: 'https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?auto=format&fit=crop&w=400&q=80'
+    image: 'https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?auto=format&fit=crop&w=800&q=80'
   },
   { 
     id: 'inst-mcd', 
@@ -131,7 +131,7 @@ const MOCK_INSTITUTIONS = [
     address: 'Jl. Jendral Sudirman, Pangkalpinang',
     distance: '1.5 km',
     services: ['Dine In', 'Drive Thru', 'McCafe'],
-    image: 'https://images.unsplash.com/photo-1552566626-52f86458a1db?auto=format&fit=crop&w=400&q=80'
+    image: 'https://images.unsplash.com/photo-1552566626-52f86458a1db?auto=format&fit=crop&w=800&q=80'
   },
   { 
     id: 'inst-3', 
@@ -140,7 +140,7 @@ const MOCK_INSTITUTIONS = [
     address: 'Jl. Rasakunda No. 1, Pangkalpinang',
     distance: '3.2 km',
     services: ['KTP-el', 'Akta Kelahiran', 'Kartu Keluarga'],
-    image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=400&q=80'
+    image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=800&q=80'
   },
 ];
 
@@ -500,27 +500,40 @@ export default function App() {
                        </span>
                     </div>
                   </div>
-                  <div className="p-8 relative bg-white/10 backdrop-blur-sm">
-                    <h4 className="text-2xl font-black text-slate-900 mb-4 leading-tight tracking-tight group-hover:text-sky-600 transition-colors">{inst.name}</h4>
-                    <p className="text-xs text-slate-500 font-bold mb-8 flex items-center gap-3 line-clamp-1">
+                  <div className="p-8 relative bg-white/10 backdrop-blur-sm flex-grow flex flex-col">
+                    <h4 className="text-2xl font-black text-slate-900 mb-4 leading-tight tracking-tight group-hover:text-sky-600 transition-colors uppercase">{inst.name}</h4>
+                    <p className="text-xs text-slate-500 font-bold mb-6 flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-slate-900/5 flex items-center justify-center shrink-0">
                         <Search size={14} className="text-slate-400" />
                       </div>
-                      {inst.address}
+                      <span className="line-clamp-1">{inst.address}</span>
                     </p>
                     
-                    <div className="flex flex-wrap gap-2.5">
-                      {inst.services.slice(0, 3).map(service => (
-                        <span key={service} className="text-[10px] font-black bg-white/80 text-slate-600 px-4 py-2 rounded-2xl border border-white shadow-sm">
+                    <div className="flex flex-wrap gap-2.5 mb-8">
+                      {inst.services.slice(0, 2).map(service => (
+                        <span key={service} className="text-[9px] font-black bg-white/80 text-slate-600 px-3 py-1.5 rounded-xl border border-white shadow-sm uppercase tracking-wider">
                           {service}
                         </span>
                       ))}
-                      {inst.services.length > 3 && (
-                        <span className="text-[10px] font-black bg-sky-500/10 text-sky-600 px-3 py-2 rounded-2xl border border-sky-500/20">
-                          +{inst.services.length - 3}
+                      {inst.services.length > 2 && (
+                        <span className="text-[9px] font-black bg-sky-500/10 text-sky-600 px-2 py-1.5 rounded-xl border border-sky-500/20 uppercase tracking-wider">
+                          +{inst.services.length - 2}
                         </span>
                       )}
                     </div>
+
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedInstitution(inst);
+                        // Scroll to the detail view if needed
+                        const el = document.getElementById('institution-detail');
+                        if (el) el.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-slate-900/10 group-hover:bg-sky-600 group-hover:shadow-sky-600/30 transition-all active:scale-95 btn-apple mt-auto"
+                    >
+                      Ambil Antrean
+                    </button>
                   </div>
                 </motion.div>
               ))}
@@ -531,10 +544,11 @@ export default function App() {
           <AnimatePresence>
             {selectedInstitution && (
               <motion.div
+                id="institution-detail"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="glass-card p-8 md:p-14 text-slate-900 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] relative overflow-hidden border-white/60"
+                className="glass-card p-8 md:p-14 text-slate-900 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] relative overflow-hidden border-white/60 scroll-mt-48"
               >
                 <div className="absolute top-8 right-8 cursor-pointer bg-slate-900/5 hover:bg-slate-900/10 p-3 rounded-full transition-colors" onClick={() => setSelectedInstitution(null)}>
                   <X size={24} />
