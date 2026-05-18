@@ -95,7 +95,7 @@ const MOCK_INSTITUTIONS = [
     address: 'Jl. Ahmad Yani, Pangkalpinang',
     distance: '0.5 km',
     services: ['Dine In', 'Take Away', 'Delivery'],
-    image: 'https://images.unsplash.com/photo-1552566626-52f86458a1db?auto=format&fit=crop&w=800&q=80'
+    image: 'https://rricoid-assets.obs.ap-southeast-4.myhuaweicloud.com/berita/Sungailiat/o/1713792346267-5FB4CD23-E465-465E-B1C6-D017C593E3B3/wabadwvkh8hii8f.jpeg'
   },
   { 
     id: 'inst-1', 
@@ -104,7 +104,7 @@ const MOCK_INSTITUTIONS = [
     address: 'Jl. Soekarno Hatta, Pangkalpinang',
     distance: '1.2 km',
     services: ['UGD', 'Poli Spesialis', 'Radiologi', 'Farmasi'],
-    image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80'
+    image: 'https://medicastore.com/images/faskes/RUMAH-SAKIT-UMUM-DAERAH-DEPATI-HAMZAH-PANGKALPINANG-MEDICASTORE.jpg'
   },
   { 
     id: 'inst-transmart', 
@@ -113,7 +113,7 @@ const MOCK_INSTITUTIONS = [
     address: 'Jl. Jend. Sudirman, Pangkalpinang',
     distance: '2.1 km',
     services: ['Belanja', 'Trans Studio Mini', 'Food Court'],
-    image: 'https://images.unsplash.com/photo-1534452203294-493d1353e124?auto=format&fit=crop&w=800&q=80'
+    image: 'https://asset.tribunnews.com/8TSdcDL9fnsnIsu_qupdPbE7MLo=/1200x675/filters:upscale():quality(30):format(webp):focal(0.5x0.5:0.5x0.5)/bangka/foto/bank/originals/20230619-Suasana-di-loby-depan-Transmart-Pangkalpinang-Senin-1962023.jpg'
   },
   { 
     id: 'inst-2', 
@@ -122,7 +122,7 @@ const MOCK_INSTITUTIONS = [
     address: 'Jl. Jendral Sudirman No. 15, Pangkalpinang',
     distance: '0.8 km',
     services: ['Customer Service', 'Teller', 'Kredit Pembukaan'],
-    image: 'https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?auto=format&fit=crop&w=800&q=80'
+    image: 'https://asset.tribunnews.com/5V-FFtjl8VW8nEFIjMD1sqDU2CE=/1200x675/filters:upscale():quality(30):format(webp):focal(0.5x0.5:0.5x0.5)/bangka/foto/bank/originals/situasi-bank-bca-cabang-sungailiat-terlihat-lengang.jpg'
   },
   { 
     id: 'inst-mcd', 
@@ -131,7 +131,7 @@ const MOCK_INSTITUTIONS = [
     address: 'Jl. Jendral Sudirman, Pangkalpinang',
     distance: '1.5 km',
     services: ['Dine In', 'Drive Thru', 'McCafe'],
-    image: 'https://images.unsplash.com/photo-1552566626-52f86458a1db?auto=format&fit=crop&w=800&q=80'
+    image: 'https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?auto=format&fit=crop&w=800&q=80'
   },
   { 
     id: 'inst-3', 
@@ -140,7 +140,7 @@ const MOCK_INSTITUTIONS = [
     address: 'Jl. Rasakunda No. 1, Pangkalpinang',
     distance: '3.2 km',
     services: ['KTP-el', 'Akta Kelahiran', 'Kartu Keluarga'],
-    image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=800&q=80'
+    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80'
   },
 ];
 
@@ -415,8 +415,10 @@ export default function App() {
   const [queueStep, setQueueStep] = useState<'select' | 'ticket'>('select');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [initialChatQuery, setInitialChatQuery] = useState<string | null>(null);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+  const [isVideoOpen, setIsVideoOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<typeof PLANS[0] | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedInstitution, setSelectedInstitution] = useState<typeof MOCK_INSTITUTIONS[0] | null>(null);
@@ -668,15 +670,16 @@ export default function App() {
                    />
                 </div>
                 <div className="text-center relative z-10">
-                  <p className="text-sky-400 text-xs font-black tracking-[0.5em] uppercase mb-6">Informasi & Edukasi</p>
-                  <h3 className="text-white font-serif italic text-4xl lg:text-6xl mb-6 leading-tight tracking-tight">Layanan Dengan Hati</h3>
-                  <p className="text-white/50 text-sm lg:text-xl max-w-sm mx-auto font-medium leading-relaxed">Nikmati kemudahan bertransaksi digital bersama Smart Queue.</p>
+                  <p className="text-sky-400 text-xs font-black tracking-[0.5em] uppercase mb-6">Informasi & Hiburan</p>
+                  <h3 className="text-white font-serif italic text-4xl lg:text-6xl mb-6 leading-tight tracking-tight uppercase">Hiburan untuk Menunggu Antrean</h3>
+                  <p className="text-white/50 text-sm lg:text-xl max-w-sm mx-auto font-medium leading-relaxed">Nikmati konten hiburan pilihan selagi menunggu giliran Anda.</p>
                   <motion.div 
-                    animate={{ scale: [1, 1.05, 1] }}
-                    transition={{ duration: 3, repeat: Infinity }}
-                    className="mt-12 w-20 h-20 bg-white/10 backdrop-blur-3xl rounded-[2rem] flex items-center justify-center mx-auto border border-white/20 shadow-2xl"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setIsVideoOpen(true)}
+                    className="mt-12 w-20 h-20 bg-white/10 backdrop-blur-3xl rounded-[2rem] flex items-center justify-center mx-auto border border-white/20 shadow-2xl cursor-pointer hover:bg-sky-500 transition-colors group"
                   >
-                    <Play size={32} fill="white" className="ml-1 text-white" />
+                    <Play size={32} fill="white" className="ml-1 text-white group-hover:fill-white" />
                   </motion.div>
                 </div>
               </div>
@@ -855,6 +858,10 @@ export default function App() {
                 ].map((q, i) => (
                   <button 
                     key={i}
+                    onClick={() => {
+                      setInitialChatQuery(q);
+                      setIsChatOpen(true);
+                    }}
                     className="flex items-center justify-between p-6 bg-white/40 hover:bg-white rounded-[2rem] border border-white/80 transition-all group hover:scale-[1.02] shadow-sm active:scale-95"
                   >
                     <span className="text-xs font-black text-slate-700 uppercase tracking-tight text-left pr-4">{q}</span>
@@ -894,20 +901,25 @@ export default function App() {
                 <div className="flex items-center gap-5 mb-8">
                   <div className="relative">
                     <img 
-                      src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&h=100&q=80" 
+                      src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?fit=crop&w=100&h=100&q=80" 
                       className="w-14 h-14 rounded-full object-cover border-4 border-white shadow-xl"
                       alt="Agent"
                     />
                     <div className="absolute bottom-1 right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
                   </div>
                   <div>
-                    <p className="text-lg font-black text-slate-900 tracking-tight">Sarah Wijaya</p>
+                    <p className="text-lg font-black text-slate-900 tracking-tight">Tomi Indra Saputra</p>
                     <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Admin Beroperasi</p>
                   </div>
                 </div>
-                <button className="w-full py-4 bg-white/50 border border-white text-slate-900 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-white transition-all shadow-sm">
+                <a 
+                  href="https://wa.me/6285783241598" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="w-full py-4 bg-white/50 border border-white text-slate-900 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-white transition-all shadow-sm flex items-center justify-center"
+                >
                   Hubungi Admin
-                </button>
+                </a>
               </GlassCard>
             </div>
           </div>
@@ -916,13 +928,26 @@ export default function App() {
 
       <AnimatePresence>
         {isChatOpen && (
-          <AIChatModal isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+          <AIChatModal 
+            isOpen={isChatOpen} 
+            onClose={() => {
+              setIsChatOpen(false);
+              setInitialChatQuery(null);
+            }} 
+            initialMessage={initialChatQuery || undefined}
+          />
         )}
       </AnimatePresence>
 
       <AnimatePresence>
         {isLoginOpen && (
           <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isVideoOpen && (
+          <VideoModal isOpen={isVideoOpen} onClose={() => setIsVideoOpen(false)} />
         )}
       </AnimatePresence>
 
@@ -987,13 +1012,33 @@ const NotificationIcon = ({ isActive }: { isActive: boolean }) => (
   </div>
 );
 
-const AIChatModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
+const AIChatModal = ({ isOpen, onClose, initialMessage }: { isOpen: boolean, onClose: () => void, initialMessage?: string }) => {
   const [messages, setMessages] = useState([
     { role: 'assistant', content: 'Halo! Saya asisten Smart Queue. Ada yang bisa saya bantu terkait antrean Anda?' }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
 
+  useEffect(() => {
+    if (initialMessage && messages.length === 1) {
+      handleInitialQuery(initialMessage);
+    }
+  }, [initialMessage]);
+
+  const handleInitialQuery = async (query: string) => {
+    const userMessage = query;
+    const newMessages = [...messages, { role: 'user', content: userMessage }];
+    setMessages(newMessages);
+    setIsTyping(true);
+    
+    const response = await getGeminiResponse(userMessage, messages as any);
+    
+    setMessages([...newMessages, { 
+      role: 'assistant', 
+      content: response 
+    }]);
+    setIsTyping(false);
+  };
   const handleSend = async () => {
     if (!input.trim() || isTyping) return;
     
@@ -1453,6 +1498,39 @@ const PaymentModal = ({ isOpen, onClose, plan }: { isOpen: boolean, onClose: () 
             </AnimatePresence>
           </div>
         </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+const VideoModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-3xl"
+      onClick={onClose}
+    >
+      <div className="absolute top-8 right-8 text-white cursor-pointer hover:scale-110 transition-transform">
+        <X size={40} />
+      </div>
+      
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        className="w-full max-w-5xl aspect-video glass-card overflow-hidden bg-black border-white/20 rounded-[2rem] shadow-2xl relative"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <iframe 
+          className="w-full h-full"
+          src="https://www.youtube.com/embed/YjVJLlEK-nE?autoplay=1" 
+          title="Video Hiburan" 
+          frameBorder="0" 
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+          allowFullScreen
+        ></iframe>
       </motion.div>
     </motion.div>
   );
