@@ -173,7 +173,7 @@ const PLANS = [
 
 // --- Sub-components ---
 
-const Navbar = ({ onOpenLogin }: { onOpenLogin: () => void }) => {
+const Navbar = ({ isLoggedIn, onOpenLogin, onLogout }: { isLoggedIn: boolean, onOpenLogin: () => void, onLogout: () => void }) => {
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -188,7 +188,10 @@ const Navbar = ({ onOpenLogin }: { onOpenLogin: () => void }) => {
       isScrolled ? "py-3 glass-nav shadow-2xl" : "py-6 bg-transparent"
     )}>
       <div className="max-w-7xl mx-auto flex justify-between items-center text-slate-900">
-        <div className="flex items-center gap-3 group cursor-pointer">
+        <div className="flex items-center gap-3 group cursor-pointer" onClick={() => {
+          const el = document.getElementById('hero');
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }}>
           <div className="w-11 h-11 bg-slate-900 rounded-[14px] flex items-center justify-center text-white shadow-2xl shadow-slate-900/20">
             <Layers size={24} />
           </div>
@@ -196,17 +199,31 @@ const Navbar = ({ onOpenLogin }: { onOpenLogin: () => void }) => {
             Smart<span className="text-sky-500">Queue</span>
           </span>
         </div>
-        <button 
-          onClick={onOpenLogin}
-          className={cn(
-            "px-6 py-2.5 rounded-full font-black btn-apple text-xs uppercase tracking-widest border transition-all duration-500",
-            isScrolled 
-              ? "bg-slate-900 text-white border-slate-900" 
-              : "bg-white/30 backdrop-blur-xl text-slate-900 border-white/60 shadow-lg"
+        <div className="flex items-center gap-3">
+          {isLoggedIn ? (
+            <div className="flex items-center gap-3 bg-white/40 backdrop-blur-xl border border-white/60 pl-4 pr-1.5 py-1.5 rounded-full shadow-lg">
+              <span className="text-[10px] font-black uppercase text-slate-700 tracking-wider">User Aktif</span>
+              <button 
+                onClick={onLogout}
+                className="px-4 py-1.5 bg-rose-500 hover:bg-rose-600 active:scale-95 text-white rounded-full font-black text-[9px] uppercase tracking-widest transition-all shadow-sm"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <button 
+              onClick={onOpenLogin}
+              className={cn(
+                "px-6 py-2.5 rounded-full font-black btn-apple text-xs uppercase tracking-widest border transition-all duration-500",
+                isScrolled 
+                  ? "bg-slate-900 text-white border-slate-900" 
+                  : "bg-white/30 backdrop-blur-xl text-slate-900 border-white/60 shadow-lg"
+              )}
+            >
+              Login Pengunjung
+            </button>
           )}
-        >
-          Login Pengunjung
-        </button>
+        </div>
       </div>
     </nav>
   );
@@ -288,7 +305,7 @@ const Hero = () => (
           Antrean <span className="text-transparent bg-clip-text bg-gradient-to-b from-sky-400 to-sky-600">Revolusioner.</span>
         </h1>
         <p className="text-xl md:text-2xl mb-12 font-bold text-slate-500 max-w-3xl mx-auto leading-relaxed px-4">
-          Hadirkan pengalaman tunggu yang <span className="text-slate-900">elegan & bebas stres</span> dengan sistem manajemen antrean berbasis Liquid Design tercanggih.
+          Hadirkan pengalaman tunggu yang <span className="text-slate-900">elegan & bebas stres</span>.
         </p>
         <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
           <motion.a 
@@ -416,10 +433,14 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [initialChatQuery, setInitialChatQuery] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isSubscribedWarningOpen, setIsSubscribedWarningOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<typeof PLANS[0] | null>(null);
+  const [pendingPlanAfterLogin, setPendingPlanAfterLogin] = useState<typeof PLANS[0] | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedInstitution, setSelectedInstitution] = useState<typeof MOCK_INSTITUTIONS[0] | null>(null);
 
@@ -430,7 +451,15 @@ export default function App() {
 
   return (
     <div className="w-full" id="hero">
-      <Navbar onOpenLogin={() => setIsLoginOpen(true)} />
+      <Navbar 
+        isLoggedIn={isLoggedIn} 
+        onOpenLogin={() => setIsLoginOpen(true)} 
+        onLogout={() => {
+          setIsLoggedIn(false);
+          setIsSubscribed(false);
+          setPendingPlanAfterLogin(null);
+        }} 
+      />
       <Hero />
       <BottomNav onOpenChat={() => setIsChatOpen(true)} />
 
@@ -527,6 +556,10 @@ export default function App() {
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
+                        if (!isSubscribed) {
+                          setIsSubscribedWarningOpen(true);
+                          return;
+                        }
                         setSelectedInstitution(inst);
                         // Scroll to the detail view if needed
                         const el = document.getElementById('institution-detail');
@@ -566,6 +599,10 @@ export default function App() {
                         whileHover={{ y: -5, scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => {
+                          if (!isSubscribed) {
+                            setIsSubscribedWarningOpen(true);
+                            return;
+                          }
                           setSelectedCategory(service as any);
                           setQueueStep('ticket');
                           window.location.hash = '#customer';
@@ -633,8 +670,13 @@ export default function App() {
                 </ul>
                 <button 
                   onClick={() => {
-                    setSelectedPlan(plan);
-                    setIsPaymentOpen(true);
+                    if (isLoggedIn) {
+                      setSelectedPlan(plan);
+                      setIsPaymentOpen(true);
+                    } else {
+                      setPendingPlanAfterLogin(plan);
+                      setIsLoginOpen(true);
+                    }
                   }}
                   className={cn(
                     "w-full py-5 rounded-[24px] font-black text-xs uppercase tracking-widest btn-apple mt-auto",
@@ -746,6 +788,10 @@ export default function App() {
                       <button
                         key={item.id}
                         onClick={() => {
+                          if (!isSubscribed) {
+                            setIsSubscribedWarningOpen(true);
+                            return;
+                          }
                           setSelectedCategory(item.label);
                           setQueueStep('ticket');
                         }}
@@ -941,7 +987,21 @@ export default function App() {
 
       <AnimatePresence>
         {isLoginOpen && (
-          <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
+          <LoginModal 
+            isOpen={isLoginOpen} 
+            onClose={() => {
+              setIsLoginOpen(false);
+              setPendingPlanAfterLogin(null);
+            }} 
+            onLoginSuccess={() => {
+              setIsLoggedIn(true);
+              if (pendingPlanAfterLogin) {
+                setSelectedPlan(pendingPlanAfterLogin);
+                setIsPaymentOpen(true);
+                setPendingPlanAfterLogin(null);
+              }
+            }}
+          />
         )}
       </AnimatePresence>
 
@@ -956,7 +1016,23 @@ export default function App() {
           <PaymentModal 
             isOpen={isPaymentOpen} 
             onClose={() => setIsPaymentOpen(false)} 
+            onPaymentSuccess={() => setIsSubscribed(true)}
             plan={selectedPlan}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isSubscribedWarningOpen && (
+          <SubscriptionWarningModal
+            isOpen={isSubscribedWarningOpen}
+            onClose={() => setIsSubscribedWarningOpen(false)}
+            isLoggedIn={isLoggedIn}
+            onOpenLogin={() => setIsLoginOpen(true)}
+            onGoToPricing={() => {
+              const el = document.getElementById('pricing');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }}
           />
         )}
       </AnimatePresence>
@@ -1134,7 +1210,92 @@ const AIChatModal = ({ isOpen, onClose, initialMessage }: { isOpen: boolean, onC
   );
 };
 
-const LoginModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
+const SubscriptionWarningModal = ({ 
+  isOpen, 
+  onClose, 
+  isLoggedIn, 
+  onOpenLogin, 
+  onGoToPricing 
+}: { 
+  isOpen: boolean, 
+  onClose: () => void, 
+  isLoggedIn: boolean, 
+  onOpenLogin: () => void, 
+  onGoToPricing: () => void 
+}) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[110] bg-slate-900/60 backdrop-blur-xl flex justify-center items-center p-4 sm:p-6"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 20 }}
+        className="w-full max-w-sm glass-card p-8 sm:p-10 flex flex-col items-center text-center relative border-white/80 rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] bg-white/70"
+      >
+        <button 
+          onClick={onClose}
+          className="absolute top-6 right-6 p-2 bg-slate-900/5 hover:bg-slate-900/10 rounded-full text-slate-900 transition-all active:scale-90"
+        >
+          <X size={18} />
+        </button>
+
+        <div className="w-16 h-16 bg-amber-500 rounded-3xl flex items-center justify-center text-white mb-6 shadow-xl shadow-amber-500/20">
+          <AlertCircle size={32} />
+        </div>
+
+        <h3 className="text-2xl font-black text-slate-900 mb-3 tracking-tight">
+          Berlangganan Diperlukan
+        </h3>
+        
+        <p className="text-slate-500 font-bold text-sm leading-relaxed mb-8">
+          Fitur pengambilan nomor antrean hanya tersedia bagi pengguna yang berlangganan paket premium aktif. Hadirkan kepuasan pelanggan terbaik sekarang.
+        </p>
+
+        <div className="flex flex-col gap-3 w-full">
+          {isLoggedIn ? (
+            <button
+              onClick={() => {
+                onClose();
+                onGoToPricing();
+              }}
+              className="w-full py-4 bg-sky-600 hover:bg-sky-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-sky-600/20 active:scale-95 transition-all"
+            >
+              Lihat Paket Berlangganan
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                onClose();
+                onOpenLogin();
+              }}
+              className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-slate-900/20 active:scale-95 transition-all"
+            >
+              Login & Berlangganan
+            </button>
+          )}
+          
+          <button
+            onClick={onClose}
+            className="w-full py-3 text-slate-400 hover:text-slate-600 font-black text-[10px] uppercase tracking-widest transition-colors"
+          >
+            Nanti Saja
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+const LoginModal = ({ isOpen, onClose, onLoginSuccess }: { isOpen: boolean, onClose: () => void, onLoginSuccess: () => void }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [view, setView] = useState<'login' | 'register'>('login');
   const [isLoading, setIsLoading] = useState(false);
@@ -1145,8 +1306,8 @@ const LoginModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void 
     // Mocking an API call
     setTimeout(() => {
       setIsLoading(false);
+      onLoginSuccess();
       onClose();
-      alert(view === 'login' ? 'Berhasil Masuk!' : 'Pendaftaran Berhasil!');
     }, 1500);
   };
 
@@ -1155,13 +1316,18 @@ const LoginModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-white/60 backdrop-blur-xl"
+      className="fixed inset-0 z-[100] overflow-y-auto bg-white/60 backdrop-blur-xl flex justify-center items-start sm:items-center p-4 sm:p-6 md:p-10"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
     >
       <motion.div
         initial={{ scale: 0.95, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.95, opacity: 0, y: 20 }}
-        className="w-full max-w-sm glass-card p-12 flex flex-col items-center text-center relative border-white/80 rounded-[3.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] bg-white/40"
+        className="w-full max-w-sm glass-card p-8 sm:p-12 flex flex-col items-center text-center relative border-white/80 rounded-[2.5rem] sm:rounded-[3.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] bg-white/40 my-auto shrink-0"
       >
         <button 
           onClick={onClose}
@@ -1179,13 +1345,44 @@ const LoginModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void 
         </h2>
         <p className="text-slate-500 font-bold text-sm mb-12 uppercase tracking-widest">Akses Akun Smart Queue</p>
 
-        <form onSubmit={handleSubmit} className="w-full space-y-5">
+        <form onSubmit={handleSubmit} className="w-full space-y-4">
+            {view === 'register' && (
+              <>
+                <div className="relative">
+                  <input 
+                    required
+                    type="text" 
+                    placeholder="Nama Lengkap" 
+                    className="w-full h-14 px-6 bg-white/60 backdrop-blur-md rounded-[1.2rem] border border-white focus:outline-none focus:ring-4 focus:ring-sky-500/10 transition-all font-bold text-slate-900 shadow-sm placeholder:text-slate-400 text-sm"
+                  />
+                </div>
+
+                <div className="relative">
+                  <input 
+                    required
+                    type="tel" 
+                    placeholder="No. WhatsApp (WA)" 
+                    className="w-full h-14 px-6 bg-white/60 backdrop-blur-md rounded-[1.2rem] border border-white focus:outline-none focus:ring-4 focus:ring-sky-500/10 transition-all font-bold text-slate-900 shadow-sm placeholder:text-slate-400 text-sm"
+                  />
+                </div>
+
+                <div className="relative">
+                  <textarea 
+                    required
+                    rows={2}
+                    placeholder="Alamat Lengkap" 
+                    className="w-full py-4 px-6 bg-white/60 backdrop-blur-md rounded-[1.2rem] border border-white focus:outline-none focus:ring-4 focus:ring-sky-500/10 transition-all font-bold text-slate-900 shadow-sm placeholder:text-slate-400 text-sm resize-none"
+                  />
+                </div>
+              </>
+            )}
+
             <div className="relative">
               <input 
                 required
                 type="text" 
-                placeholder="Email atau No. Handphone" 
-                className="w-full h-16 px-6 bg-white/60 backdrop-blur-md rounded-[1.2rem] border border-white focus:outline-none focus:ring-4 focus:ring-sky-500/10 transition-all font-bold text-slate-900 shadow-sm placeholder:text-slate-400"
+                placeholder={view === 'login' ? "Email atau No. Handphone" : "Email atau Username"} 
+                className="w-full h-14 px-6 bg-white/60 backdrop-blur-md rounded-[1.2rem] border border-white focus:outline-none focus:ring-4 focus:ring-sky-500/10 transition-all font-bold text-slate-900 shadow-sm placeholder:text-slate-400 text-sm"
               />
             </div>
             
@@ -1194,14 +1391,14 @@ const LoginModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void 
                 required
                 type={showPassword ? "text" : "password"}
                 placeholder="Password" 
-                className="w-full h-16 px-6 bg-white/60 backdrop-blur-md rounded-[1.2rem] border border-white focus:outline-none focus:ring-4 focus:ring-sky-500/10 transition-all font-bold text-slate-900 shadow-sm placeholder:text-slate-400"
+                className="w-full h-14 px-6 bg-white/60 backdrop-blur-md rounded-[1.2rem] border border-white focus:outline-none focus:ring-4 focus:ring-sky-500/10 transition-all font-bold text-slate-900 shadow-sm placeholder:text-slate-400 text-sm"
               />
               <button 
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900 transition-colors"
               >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
 
@@ -1211,21 +1408,23 @@ const LoginModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void 
                   required
                   type="password"
                   placeholder="Konfirmasi Password" 
-                  className="w-full h-16 px-6 bg-white/60 backdrop-blur-md rounded-[1.2rem] border border-white focus:outline-none focus:ring-4 focus:ring-sky-500/10 transition-all font-bold text-slate-900 shadow-sm placeholder:text-slate-400"
+                  className="w-full h-14 px-6 bg-white/60 backdrop-blur-md rounded-[1.2rem] border border-white focus:outline-none focus:ring-4 focus:ring-sky-500/10 transition-all font-bold text-slate-900 shadow-sm placeholder:text-slate-400 text-sm"
                 />
               </div>
             )}
 
-            <div className="text-right">
+            {view === 'login' && (
+              <div className="text-right">
                 <button type="button" className="text-sky-600 font-black text-[11px] uppercase tracking-widest hover:underline px-2">
-                    Lupa password?
+                  Lupa password?
                 </button>
-            </div>
+              </div>
+            )}
 
            <button 
             disabled={isLoading}
             className={cn(
-              "w-full h-16 bg-slate-900 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-2xl shadow-slate-900/20 active:scale-95 transition-all mt-6 flex items-center justify-center",
+              "w-full h-14 bg-slate-900 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-2xl shadow-slate-900/20 active:scale-95 transition-all mt-4 flex items-center justify-center",
               isLoading && "opacity-70 cursor-not-allowed"
             )}
           >
@@ -1236,7 +1435,7 @@ const LoginModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void 
                 className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full"
               />
             ) : (
-                view === 'login' ? 'MULAI SEKARANG' : 'DAFTAR SEKARANG'
+                view === 'login' ? 'LOGIN' : 'DAFTAR'
             )}
           </button>
         </form>
@@ -1254,23 +1453,80 @@ const LoginModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void 
   );
 };
 
-const PaymentModal = ({ isOpen, onClose, plan }: { isOpen: boolean, onClose: () => void, plan: typeof PLANS[0] }) => {
-  const [step, setStep] = useState<'checkout' | 'processing' | 'success'>('checkout');
+const PaymentModal = ({ isOpen, onClose, plan, onPaymentSuccess }: { isOpen: boolean, onClose: () => void, plan: typeof PLANS[0], onPaymentSuccess: () => void }) => {
+  const [step, setStep] = useState<'checkout' | 'qris_pay' | 'midtrans_snap' | 'processing' | 'success'>('checkout');
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
+  const [qrisTimer, setQrisTimer] = useState(900); // 15 mins in seconds
+  const [midtransSubStep, setMidtransSubStep] = useState<'select' | 'gopay' | 'va' | 'card'>('select');
+  const [selectedBank, setSelectedBank] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCvv, setCardCvv] = useState('');
+  const [cardError, setCardError] = useState('');
+
+  const [orderId] = useState(() => `SQ-${Math.floor(100000 + Math.random() * 900000)}`);
+
+  // QRIS Countdown Timer
+  useEffect(() => {
+    let interval: any;
+    if (step === 'qris_pay') {
+      interval = setInterval(() => {
+        setQrisTimer((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [step]);
+
+  const formatTimer = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleCopyVa = (vaNumber: string) => {
+    navigator.clipboard.writeText(vaNumber);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const methods = [
-    { id: 'gopay', name: 'GoPay', icon: <Smartphone size={24} /> },
-    { id: 'ovo', name: 'OVO', icon: <Smartphone size={24} /> },
+    { id: 'qris', name: 'QRIS (GoPay/Shopee/Dana)', icon: <QrCode size={24} /> },
+    { id: 'midtrans', name: 'Midtrans Payment Gateway', icon: <Layers size={24} /> },
     { id: 'va', name: 'Virtual Account', icon: <Zap size={24} /> },
     { id: 'card', name: 'Kartu Kredit', icon: <CreditCard size={24} /> },
   ];
 
   const handlePayment = () => {
     if (!paymentMethod) return;
+    if (paymentMethod === 'qris') {
+      setQrisTimer(900);
+      setStep('qris_pay');
+    } else if (paymentMethod === 'midtrans') {
+      setMidtransSubStep('select');
+      setStep('midtrans_snap');
+    } else {
+      setStep('processing');
+      setTimeout(() => {
+        setStep('success');
+        onPaymentSuccess();
+      }, 3000);
+    }
+  };
+
+  const triggerMockSuccess = () => {
     setStep('processing');
     setTimeout(() => {
       setStep('success');
-    }, 3000);
+      onPaymentSuccess();
+    }, 2000);
   };
 
   return (
@@ -1278,50 +1534,55 @@ const PaymentModal = ({ isOpen, onClose, plan }: { isOpen: boolean, onClose: () 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
+      className="fixed inset-0 z-[100] overflow-y-auto bg-slate-900/65 backdrop-blur-xl flex justify-center items-start sm:items-center p-4 sm:p-6 md:p-10"
+      onClick={(e) => {
+        // Only trigger onClose when clicking directly on the backdrop container, not on grandchildren
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
     >
       <motion.div
-        initial={{ scale: 0.9, y: 30, opacity: 0 }}
+        initial={{ scale: 0.95, y: 20, opacity: 0 }}
         animate={{ scale: 1, y: 0, opacity: 1 }}
-        exit={{ scale: 0.9, y: 30, opacity: 0 }}
-        className="w-full max-w-3xl glass-card overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] bg-white/60 border-white/80 rounded-[2.5rem]"
+        exit={{ scale: 0.95, y: 20, opacity: 0 }}
+        className="w-full max-w-3xl glass-card overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.35)] bg-white/60 border-white/80 rounded-[2rem] sm:rounded-[2.5rem] my-auto relative shrink-0"
       >
-        <div className="flex flex-col md:flex-row min-h-[500px]">
+        <div className="flex flex-col md:flex-row min-h-[480px]">
           {/* Sidebar / Plan Info */}
           <div className={cn(
-            "md:w-2/5 p-12 flex flex-col justify-between relative overflow-hidden transition-colors duration-1000 shrink-0",
+            "md:w-2/5 p-6 sm:p-8 md:p-10 flex flex-col justify-between relative overflow-hidden transition-colors duration-1000 shrink-0",
             step === 'success' ? "bg-emerald-600 text-white" : "bg-slate-900 text-white"
           )}>
             <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-16">
-                <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 backdrop-blur-3xl">
-                  <Layers size={24} />
+              <div className="flex items-center gap-3 mb-8 md:mb-12">
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-white/10 rounded-xl md:rounded-2xl flex items-center justify-center border border-white/20 backdrop-blur-3xl">
+                  <Layers size={20} className="md:size-6" />
                 </div>
-                <span className="font-black tracking-tighter text-2xl uppercase">Smart<span className="text-sky-400">Queue</span></span>
+                <span className="font-black tracking-tighter text-xl md:text-2xl uppercase">Smart<span className="text-sky-400">Queue</span></span>
               </div>
 
-              <div className="mb-12">
-                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-3">Paket Konfirmasi</p>
-                <h3 className="text-4xl font-black tracking-tighter leading-none">{plan.name}</h3>
+              <div className="mb-8 md:mb-10">
+                <p className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-2 md:mb-3">Paket Konfirmasi</p>
+                <h3 className="text-3xl md:text-4xl font-black tracking-tighter leading-none">{plan.name}</h3>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-4 md:space-y-5">
                 {plan.features.map(f => (
-                  <div key={f} className="flex items-center gap-4 text-sm font-bold text-white/70">
-                    <CheckCircle2 size={20} className={cn(step === 'success' ? "text-white" : "text-sky-400")} /> {f}
+                  <div key={f} className="flex items-center gap-3 text-xs md:text-sm font-bold text-white/70">
+                    <CheckCircle2 size={18} className={cn(step === 'success' ? "text-white" : "text-sky-400")} /> {f}
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="relative z-10 pt-12 border-t border-white/10 mt-12">
-              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-2">Total Penagihan</p>
-              <div className="flex items-baseline gap-2">
-                <span className="text-5xl font-black tracking-tighter">{plan.price}</span>
-                <span className="text-white/40 text-sm font-bold">/ bln</span>
+            <div className="relative z-10 pt-8 border-t border-white/10 mt-8 md:mt-12">
+              <p className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-1 lg:mb-2">Total Penagihan</p>
+              <div className="flex items-baseline gap-1.5 md:gap-2">
+                <span className="text-4xl md:text-5xl font-black tracking-tighter">{plan.price}</span>
+                <span className="text-white/40 text-xs md:text-sm font-bold">/ bln</span>
               </div>
-              <p className="text-[9px] font-bold text-white/30 mt-3">*Harga sudah termasuk PPN 11%</p>
+              <p className="text-[8px] md:text-[9px] font-bold text-white/30 mt-2 md:mt-3">*Harga sudah termasuk PPN 11%</p>
             </div>
 
             <div className="absolute top-0 right-0 w-80 h-80 bg-sky-500/30 blur-[120px] rounded-full -mr-40 -mt-40" />
@@ -1329,13 +1590,13 @@ const PaymentModal = ({ isOpen, onClose, plan }: { isOpen: boolean, onClose: () 
           </div>
 
           {/* Main Content Area */}
-          <div className="md:w-3/5 p-12 bg-white/50 relative flex flex-col">
+          <div className="md:w-3/5 p-6 sm:p-8 md:p-10 bg-white/50 relative flex flex-col justify-center">
             {step === 'checkout' && (
               <button 
                 onClick={onClose}
-                className="absolute top-10 right-10 p-3 bg-slate-900/5 hover:bg-slate-900/10 rounded-full transition-all active:scale-90"
+                className="absolute top-4 right-4 md:top-8 md:right-8 p-2 md:p-3 bg-slate-900/5 hover:bg-slate-900/10 rounded-full transition-all active:scale-90 z-20"
               >
-                <X size={24} className="text-slate-900" />
+                <X size={20} className="text-slate-900 md:size-6" />
               </button>
             )}
 
@@ -1346,72 +1607,412 @@ const PaymentModal = ({ isOpen, onClose, plan }: { isOpen: boolean, onClose: () 
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
-                  className="h-full flex flex-col"
+                  className="h-full flex flex-col justify-between"
                 >
-                  <h3 className="text-3xl font-black text-slate-900 mb-2 tracking-tight">Metode Pembayaran</h3>
-                  <p className="text-slate-400 text-xs font-black uppercase tracking-[0.2em] mb-12">Pilih salah satu akses Anda untuk memproses</p>
+                  <div>
+                    <h3 className="text-2xl md:text-3xl font-black text-slate-900 mb-1.5 tracking-tight">Metode Pembayaran</h3>
+                    <p className="text-slate-400 text-[10px] md:text-xs font-black uppercase tracking-[0.2em] mb-8 md:mb-10">Pilih salah satu akses Anda untuk memproses</p>
+                  </div>
 
-                  <div className="grid grid-cols-1 gap-5 flex-grow">
+                  <div className="grid grid-cols-1 gap-3 md:gap-4 flex-grow">
                     {methods.map(m => (
                       <button
                         key={m.id}
                         onClick={() => setPaymentMethod(m.id)}
                         className={cn(
-                          "w-full p-6 rounded-[2rem] border-2 flex items-center gap-6 transition-all group overflow-hidden relative",
+                          "w-full p-4 md:p-5 rounded-[1.5rem] md:rounded-[2rem] border-2 flex items-center gap-4 md:gap-6 transition-all group overflow-hidden relative",
                           paymentMethod === m.id 
-                            ? "bg-white border-sky-500 shadow-2xl ring-8 ring-sky-500/5 scale-[1.02]" 
+                            ? "bg-white border-sky-500 shadow-xl ring-8 ring-sky-500/5 scale-[1.01]" 
                             : "bg-white/40 border-white hover:bg-white hover:border-slate-200"
                         )}
                       >
                         <div className={cn(
-                          "w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-700 shadow-inner",
+                          "w-11 h-11 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center transition-all duration-700 shadow-inner shrink-0",
                           paymentMethod === m.id ? "bg-sky-500 text-white" : "bg-slate-50 text-slate-400"
                         )}>
                           {React.cloneElement(m.icon as React.ReactElement, { className: paymentMethod === m.id ? "text-white" : "" })}
                         </div>
-                        <span className={cn("font-black text-lg tracking-tight uppercase", paymentMethod === m.id ? "text-slate-900" : "text-slate-400")}>
+                        <span className={cn("font-black text-sm md:text-base tracking-tight uppercase", paymentMethod === m.id ? "text-slate-900" : "text-slate-400")}>
                           {m.name}
                         </span>
                         {paymentMethod === m.id && (
                           <motion.div 
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
-                            className="ml-auto w-8 h-8 rounded-full bg-sky-500 flex items-center justify-center text-white shadow-lg"
+                            className="ml-auto w-6 h-6 md:w-8 md:h-8 rounded-full bg-sky-500 flex items-center justify-center text-white shadow-lg shrink-0"
                           >
-                            <CheckCircle2 size={16} />
+                            <CheckCircle2 size={14} className="md:size-4" />
                           </motion.div>
                         )}
                       </button>
                     ))}
                   </div>
 
-                  <div className="mt-12 p-6 bg-slate-900/5 rounded-[2rem] border border-white flex items-center gap-4">
-                    <ShieldCheck size={24} className="text-sky-500 shrink-0" />
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-relaxed">
+                  <div className="mt-6 md:mt-8 p-4 md:p-5 bg-slate-900/5 rounded-[1.5rem] md:rounded-[2rem] border border-white flex items-center gap-3 md:gap-4">
+                    <ShieldCheck size={20} className="text-sky-500 shrink-0 md:size-6" />
+                    <p className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest leading-relaxed">
                       Transaksi Anda dienkripsi dengan standar keamanan 256-bit SSL untuk perlindungan maksimal.
                     </p>
                   </div>
 
-                  <div className="flex flex-col gap-4 mt-8">
+                  <div className="flex flex-col gap-3 mt-6">
                     <button 
                       disabled={!paymentMethod}
                       onClick={handlePayment}
                       className={cn(
-                        "w-full py-6 rounded-[2rem] font-black text-sm uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-3 shadow-2xl",
+                        "w-full py-4 md:py-5 rounded-[1.5rem] md:rounded-[2rem] font-black text-xs md:text-sm uppercase tracking-[0.2em] md:tracking-[0.3em] transition-all flex items-center justify-center gap-3 shadow-xl",
                         paymentMethod 
-                          ? "bg-slate-900 text-white shadow-slate-900/30 active:scale-95 btn-apple" 
+                          ? "bg-slate-900 text-white shadow-slate-900/20 active:scale-95 btn-apple" 
                           : "bg-slate-100 text-slate-300 cursor-not-allowed"
                       )}
                     >
-                      Proses Pembayaran <ArrowRight size={20} />
+                      Proses Pembayaran <ArrowRight size={18} />
                     </button>
                     
                     <button 
                       onClick={onClose}
-                      className="w-full py-4 text-slate-400 font-black text-[10px] uppercase tracking-[0.3em] hover:text-slate-900 transition-colors"
+                      className="w-full py-2 text-slate-400 font-black text-[9px] md:text-[10px] uppercase tracking-[0.2em] hover:text-slate-900 transition-colors"
                     >
                       Kembali ke Beranda
                     </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {step === 'qris_pay' && (
+                <motion.div
+                  key="qris_pay"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="h-full flex flex-col"
+                >
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h3 className="text-2xl font-black text-slate-900 tracking-tight">Pembayaran QRIS</h3>
+                      <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Scan kode QR di bawah</p>
+                    </div>
+                    <button 
+                      onClick={() => setStep('checkout')}
+                      className="text-sky-500 hover:text-sky-600 transition-colors text-xs font-black uppercase tracking-wider"
+                    >
+                      Ubah Metode
+                    </button>
+                  </div>
+
+                  <div className="flex flex-col items-center justify-center p-6 bg-slate-50 border border-slate-100 rounded-[2rem] shadow-inner mb-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="text-[10px] font-black tracking-widest text-slate-400 uppercase">DI-SUPPORT OLEH</span>
+                      <span className="text-sm font-black text-rose-600 bg-rose-50 px-2.5 py-0.5 rounded-md border border-rose-100">QRIS</span>
+                    </div>
+
+                    <div className="w-[180px] h-[180px] bg-white p-3 rounded-2xl shadow-md border border-slate-200/55 flex items-center justify-center">
+                      <img 
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=SMARTQUEUE-QRIS-${plan.name.replace(/\s+/g, '-')}-${orderId}`} 
+                        alt="QRIS QR Code" 
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+
+                    <div className="text-center mt-4">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Batas Waktu Pembayaran</p>
+                      <p className="text-2xl font-mono font-extrabold text-rose-500 tracking-tight">{formatTimer(qrisTimer)}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 bg-white/40 p-5 rounded-2xl border border-white mb-6 text-xs text-slate-600 font-medium">
+                    <div className="flex gap-2">
+                      <span className="font-extrabold text-sky-500">1.</span>
+                      <p>Buka aplikasi e-wallet Anda (GoPay, DANA, OVO, ShopeePay) atau Mobile Banking Anda.</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <span className="font-extrabold text-sky-500">2.</span>
+                      <p>Pilih menu <span className="font-bold text-slate-800">Bayar / Scan / Pindai QR</span>.</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <span className="font-extrabold text-sky-500">3.</span>
+                      <p>Pindai Kode QR di atas dan lakukan pembayaran sebesar <span className="font-extrabold text-slate-800">{plan.price}</span>.</p>
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={triggerMockSuccess}
+                    className="w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 mt-auto"
+                  >
+                    <CheckCircle2 size={16} /> Konfirmasi Pembayaran Berhasil
+                  </button>
+                </motion.div>
+              )}
+
+              {step === 'midtrans_snap' && (
+                <motion.div
+                  key="midtrans_snap"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="h-full flex flex-col"
+                >
+                  <div className="border border-slate-200 shadow-2xl rounded-3xl overflow-hidden bg-white flex flex-col h-full min-h-[460px]">
+                    <div className="bg-slate-50 border-b border-slate-100 p-5 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sky-600 font-extrabold uppercase tracking-tight text-base">mid<span className="text-slate-800">trans</span></span>
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="text-[8px] font-bold text-slate-400 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200/50 uppercase tracking-wide">SECURE COUPLING</span>
+                      </div>
+                      <button 
+                        onClick={() => setStep('checkout')}
+                        className="text-[10px] font-black text-rose-500 hover:text-rose-600 uppercase tracking-widest block"
+                      >
+                        Batal
+                      </button>
+                    </div>
+
+                    <div className="bg-sky-50/50 p-6 flex justify-between items-center border-b border-sky-100">
+                      <div>
+                        <h4 className="font-extrabold text-xs text-slate-900 uppercase tracking-tight">Layanan SmartQueue</h4>
+                        <p className="text-[10px] text-slate-400 font-bold mt-0.5">Paket {plan.name}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[12px] font-black text-sky-600">{plan.price}</p>
+                        <p className="text-[9px] text-slate-400 font-bold mt-0.5">Order ID: {orderId}</p>
+                      </div>
+                    </div>
+
+                    <div className="p-6 flex-grow overflow-y-auto max-h-[280px] custom-scrollbar">
+                      {midtransSubStep === 'select' && (
+                        <div className="space-y-3">
+                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3">Pilih Metode Pembayaran Midtrans</p>
+                          
+                          <button 
+                            onClick={() => setMidtransSubStep('gopay')}
+                            className="w-full flex items-center justify-between p-4 border border-slate-100 hover:border-sky-300 hover:bg-sky-50/20 rounded-2xl transition-all text-left"
+                          >
+                            <div className="flex items-center gap-4">
+                              <div className="w-9 h-9 bg-sky-50 rounded-xl flex items-center justify-center text-sky-600">
+                                <QrCode size={18} />
+                              </div>
+                              <div>
+                                <p className="font-black text-xs text-slate-800 uppercase tracking-tight">QRIS / GoPay</p>
+                                <p className="text-[9px] text-slate-400 font-bold mt-0.5">DANA, ShopeePay, LinkAja, QR Apps</p>
+                              </div>
+                            </div>
+                            <ChevronRight size={16} className="text-slate-400" />
+                          </button>
+
+                          <button 
+                            onClick={() => setMidtransSubStep('va')}
+                            className="w-full flex items-center justify-between p-4 border border-slate-100 hover:border-sky-300 hover:bg-sky-50/20 rounded-2xl transition-all text-left"
+                          >
+                            <div className="flex items-center gap-4">
+                              <div className="w-9 h-9 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600">
+                                <Zap size={18} />
+                              </div>
+                              <div>
+                                <p className="font-black text-xs text-slate-800 uppercase tracking-tight">Virtual Account Transfer</p>
+                                <p className="text-[9px] text-slate-400 font-bold mt-0.5">BCA, Mandiri, BNI, BRI, Permata</p>
+                              </div>
+                            </div>
+                            <ChevronRight size={16} className="text-slate-400" />
+                          </button>
+
+                          <button 
+                            onClick={() => setMidtransSubStep('card')}
+                            className="w-full flex items-center justify-between p-4 border border-slate-100 hover:border-sky-300 hover:bg-sky-50/20 rounded-2xl transition-all text-left"
+                          >
+                            <div className="flex items-center gap-4">
+                              <div className="w-9 h-9 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600">
+                                <CreditCard size={18} />
+                              </div>
+                              <div>
+                                <p className="font-black text-xs text-slate-800 uppercase tracking-tight">Kartu Kredit / Debit</p>
+                                <p className="text-[9px] text-slate-400 font-bold mt-0.5">Visa, Mastercard, JCB, Amex</p>
+                              </div>
+                            </div>
+                            <ChevronRight size={16} className="text-slate-400" />
+                          </button>
+                        </div>
+                      )}
+
+                      {midtransSubStep === 'gopay' && (
+                        <div className="flex flex-col items-center py-2 text-center">
+                          <img 
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=MIDTRANS-SNAP-QRIS-${orderId}`} 
+                            alt="Snap Gopay / QRIS" 
+                            className="w-32 h-32 border border-slate-200 rounded-xl p-2 mb-3"
+                          />
+                          <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-4">Pindai QR Code di atas dengan aplikasi pembayaran Anda</p>
+                          <div className="flex gap-3 w-full">
+                            <button 
+                              onClick={() => setMidtransSubStep('select')}
+                              className="w-1/2 py-3 border border-slate-200 text-slate-500 hover:border-slate-300 font-black text-[9px] uppercase tracking-wider rounded-xl transition-all"
+                            >
+                              Kembali
+                            </button>
+                            <button 
+                              onClick={triggerMockSuccess}
+                              className="w-1/2 py-3 bg-sky-500 text-white font-black text-[9px] uppercase tracking-wider rounded-xl transition-all hover:bg-sky-600 shadow-lg shadow-sky-500/20"
+                            >
+                              Simulasi Selesai
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {midtransSubStep === 'va' && (
+                        <div>
+                          {!selectedBank ? (
+                            <div className="space-y-2">
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Pilih Bank Bank Transfer</p>
+                              {['BCA', 'Mandiri', 'BNI', 'BRI'].map(bank => (
+                                <button 
+                                  key={bank}
+                                  onClick={() => setSelectedBank(bank)}
+                                  className="w-full flex items-center justify-between p-3 border border-slate-100 hover:border-sky-300 hover:bg-sky-50/20 rounded-xl transition-all"
+                                >
+                                  <span className="font-extrabold text-xs text-slate-700">{bank} Virtual Account</span>
+                                  <ChevronRight size={14} className="text-slate-400" />
+                                </button>
+                              ))}
+                              <button 
+                                onClick={() => setMidtransSubStep('select')}
+                                className="w-full mt-4 py-3 border border-slate-200 text-slate-500 font-black text-[9px] uppercase tracking-wider rounded-xl hover:bg-slate-50 transition-all text-center"
+                              >
+                                Kembali
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="space-y-4 py-1">
+                              <div>
+                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Bank Penerima</p>
+                                <p className="font-black text-xs text-slate-800">{selectedBank} Virtual Account</p>
+                              </div>
+                              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
+                                <div>
+                                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-wider">NOMOR VIRTUAL ACCOUNT</p>
+                                  <p className="font-mono font-extrabold text-sm text-slate-800 tracking-wider">8830185783241598</p>
+                                </div>
+                                <button 
+                                  onClick={() => handleCopyVa('8830185783241598')}
+                                  className="text-[9px] font-black uppercase text-sky-500 bg-sky-50 border border-sky-100 px-3 py-1.5 rounded-lg active:scale-95 transition-all"
+                                >
+                                  {copied ? 'Tersalin' : 'Salin'}
+                                </button>
+                              </div>
+
+                              <p className="text-[9px] text-slate-400 font-bold leading-relaxed bg-amber-50/50 border border-amber-100 p-3 rounded-xl">
+                                Transfer dari ATM, Mobile Banking, atau internet banking sebelum melanjutkan.
+                              </p>
+
+                              <div className="flex gap-3 pt-2">
+                                <button 
+                                  onClick={() => setSelectedBank(null)}
+                                  className="w-1/2 py-3 border border-slate-200 text-slate-500 hover:border-slate-300 font-black text-[9px] uppercase tracking-wider rounded-xl transition-all"
+                                >
+                                  Ubah Bank
+                                </button>
+                                <button 
+                                  onClick={triggerMockSuccess}
+                                  className="w-1/2 py-3 bg-sky-500 text-white font-black text-[9px] uppercase tracking-wider rounded-xl transition-all hover:bg-sky-600 shadow-lg"
+                                >
+                                  Saya Sudah Bayar
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {midtransSubStep === 'card' && (
+                        <div className="space-y-4">
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Informasi Kartu Kredit / Debit</p>
+                          <div className="space-y-3">
+                            <div>
+                              <label className="block text-[8px] font-black text-slate-400 uppercase tracking-wider mb-1">Nomor Kartu</label>
+                              <input 
+                                type="text"
+                                maxLength={19}
+                                placeholder="4111 1111 2222 3333"
+                                value={cardNumber}
+                                onChange={(e) => {
+                                  const val = e.target.value.replace(/\D/g, '');
+                                  const formatted = val.replace(/(.{4})/g, '$1 ').trim();
+                                  setCardNumber(formatted);
+                                }}
+                                className="w-full p-3 border border-slate-200 rounded-xl text-xs font-mono font-bold focus:outline-none focus:border-sky-500"
+                              />
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="block text-[8px] font-black text-slate-400 uppercase tracking-wider mb-1">Exp Date (MM/YY)</label>
+                                <input 
+                                  type="text"
+                                  maxLength={5}
+                                  placeholder="12/28"
+                                  value={cardExpiry}
+                                  onChange={(e) => {
+                                    let val = e.target.value.replace(/\D/g, '');
+                                    if (val.length >= 2) {
+                                      val = val.substring(0,2) + '/' + val.substring(2,4);
+                                    }
+                                    setCardExpiry(val);
+                                  }}
+                                  className="w-full p-3 border border-slate-200 rounded-xl text-xs font-mono font-bold focus:outline-none focus:border-sky-500 text-center"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[8px] font-black text-slate-400 uppercase tracking-wider mb-1">CVV</label>
+                                <input 
+                                  type="text"
+                                  maxLength={3}
+                                  placeholder="123"
+                                  value={cardCvv}
+                                  onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, ''))}
+                                  className="w-full p-3 border border-slate-200 rounded-xl text-xs font-mono font-bold focus:outline-none focus:border-sky-500 text-center"
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          {cardError && <p className="text-[10px] text-red-500 font-extrabold uppercase">{cardError}</p>}
+
+                          <div className="flex gap-3 pt-1">
+                            <button 
+                              onClick={() => setMidtransSubStep('select')}
+                              className="w-1/2 py-3 border border-slate-200 text-slate-500 hover:border-slate-300 font-black text-[9px] uppercase tracking-wider rounded-xl transition-all"
+                            >
+                              Kembali
+                            </button>
+                            <button 
+                              onClick={() => {
+                                if (cardNumber.replace(/\s/g,'').length < 16) {
+                                  setCardError('Nomor kartu harus 16 digit');
+                                  return;
+                                }
+                                if (cardExpiry.length < 5) {
+                                  setCardError('Batas waktu exp date MM/YY');
+                                  return;
+                                }
+                                if (cardCvv.length < 3) {
+                                  setCardError('CVV salah');
+                                  return;
+                                }
+                                setCardError('');
+                                triggerMockSuccess();
+                              }}
+                              className="w-1/2 py-3 bg-sky-500 text-white font-black text-[9px] uppercase tracking-wider rounded-xl transition-all hover:bg-sky-600 shadow-lg shadow-sky-500/20"
+                            >
+                              Bayar Sekarang
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="bg-slate-50 border-t border-slate-100 p-4 text-center">
+                      <p className="text-[8px] font-extrabold text-slate-400 uppercase tracking-wider flex items-center justify-center gap-1.5">
+                        <ShieldCheck size={12} className="text-emerald-500" /> SECURE INTEGRATOR SYSTEM BY MIDTRANS
+                      </p>
+                    </div>
                   </div>
                 </motion.div>
               )}
@@ -1482,11 +2083,11 @@ const PaymentModal = ({ isOpen, onClose, plan }: { isOpen: boolean, onClose: () 
                   <div className="mt-12 pt-10 border-t border-slate-200/50 w-full flex justify-center gap-12">
                     <div className="text-center">
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Invoice</p>
-                      <p className="text-sm font-black text-slate-900 tracking-tight">INV-SQ-0092</p>
+                      <p className="text-sm font-black text-slate-900 tracking-tight">{orderId}</p>
                     </div>
                     <div className="text-center">
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Metode</p>
-                      <p className="text-sm font-black text-sky-600 tracking-tight uppercase">{paymentMethod}</p>
+                      <p className="text-sm font-black text-sky-600 tracking-tight uppercase">{paymentMethod || 'Lunas'}</p>
                     </div>
                     <div className="text-center">
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Waktu (WIB)</p>
