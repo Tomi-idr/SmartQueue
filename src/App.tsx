@@ -35,7 +35,10 @@ import {
   X,
   Send,
   Eye,
-  EyeOff
+  EyeOff,
+  PlusCircle,
+  Briefcase,
+  MapPin
 } from 'lucide-react';
 import GlassCard from '@/src/components/ui/GlassCard';
 import { cn } from '@/src/lib/utils';
@@ -441,10 +444,12 @@ export default function App() {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<typeof PLANS[0] | null>(null);
   const [pendingPlanAfterLogin, setPendingPlanAfterLogin] = useState<typeof PLANS[0] | null>(null);
+  const [institutions, setInstitutions] = useState(MOCK_INSTITUTIONS);
+  const [isAddUMKMOpen, setIsAddUMKMOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedInstitution, setSelectedInstitution] = useState<typeof MOCK_INSTITUTIONS[0] | null>(null);
 
-  const filteredInstitutions = MOCK_INSTITUTIONS.filter(inst => 
+  const filteredInstitutions = institutions.filter(inst => 
     inst.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     inst.type.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -496,6 +501,41 @@ export default function App() {
                 placeholder="Cari Bank, Rumah Sakit, atau Kantor Pemerintah..." 
                 className="w-full h-20 pl-20 pr-10 bg-white/60 backdrop-blur-3xl rounded-[2.8rem] shadow-2xl border border-white/80 text-slate-900 font-black focus:ring-12 focus:ring-sky-500/10 focus:outline-none transition-all placeholder:text-slate-400 text-xl tracking-tight"
               />
+            </div>
+          </motion.div>
+
+          {/* Section: Perusahaan Tambah UMKM */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="relative max-w-3xl mx-auto"
+          >
+            <div className="absolute -inset-0.5 bg-gradient-to-tr from-sky-400 to-emerald-400 rounded-[2rem] opacity-20 blur-xl"></div>
+            <div className="relative bg-white/50 backdrop-blur-3xl border border-white/80 p-8 sm:p-10 rounded-[2.5rem] flex flex-col md:flex-row justify-between items-center gap-8 shadow-xl">
+              <div className="flex items-start gap-5 text-left">
+                <div className="p-4 bg-sky-500/10 text-sky-600 rounded-2xl shrink-0">
+                  <Briefcase size={28} />
+                </div>
+                <div>
+                  <h4 className="text-xl font-black text-slate-900 tracking-tight leading-snug">Kemitraan UMKM & Perusahaan</h4>
+                  <p className="text-xs text-slate-500 font-bold mt-2 leading-relaxed">Punya UMKM atau bisnis lokal? Daftarkan usaha Anda sekarang ke platform Smart Queue untuk menghadirkan sistem antrean terintegrasi premium.</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => {
+                  if (isLoggedIn) {
+                    setIsAddUMKMOpen(true);
+                  } else {
+                    alert('Silakan login terlebih dahulu untuk mendaftarkan UMKM Anda.');
+                    setIsLoginOpen(true);
+                  }
+                }}
+                className="w-full md:w-auto px-8 py-4 bg-slate-900 hover:bg-sky-600 font-black text-xs uppercase tracking-widest text-white rounded-2xl shadow-xl transition-all active:scale-95 shrink-0 btn-apple flex items-center justify-center gap-3"
+              >
+                <PlusCircle size={16} />
+                Tambah UMKM
+              </button>
             </div>
           </motion.div>
 
@@ -1037,6 +1077,20 @@ export default function App() {
         )}
       </AnimatePresence>
 
+      <AnimatePresence>
+        {isAddUMKMOpen && (
+          <AddUMKMModal
+            isOpen={isAddUMKMOpen}
+            onClose={() => setIsAddUMKMOpen(false)}
+            onAddSuccess={(newUMKM) => {
+              setInstitutions([newUMKM, ...institutions]);
+              // Option text: Successfully added
+              alert(`Berhasil mendaftarkan ${newUMKM.name}!`);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Footer */}
       <footer className="glass-nav py-20 mt-32 border-t border-white/20">
         <div className="max-w-7xl mx-auto px-10">
@@ -1290,6 +1344,186 @@ const SubscriptionWarningModal = ({
             Nanti Saja
           </button>
         </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+const AddUMKMModal = ({ isOpen, onClose, onAddSuccess }: { isOpen: boolean, onClose: () => void, onAddSuccess: (newUMKM: any) => void }) => {
+  const [name, setName] = useState('');
+  const [type, setType] = useState('Kuliner');
+  const [address, setAddress] = useState('');
+  const [servicesInput, setServicesInput] = useState('');
+  const [distance, setDistance] = useState('0.1 km');
+  const [imageUrl, setImageUrl] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const DEFAULT_IMAGES: Record<string, string> = {
+    'Kuliner': 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80',
+    'Retail': 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=800&q=80',
+    'Kesehatan': 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80',
+    'Perbankan': 'https://images.unsplash.com/photo-1501167786227-4cba60f6d58f?auto=format&fit=crop&w=800&q=80',
+    'Jasa': 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=80',
+    'Lainnya': 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80'
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    setTimeout(() => {
+      setIsLoading(false);
+      
+      const parsedServices = servicesInput
+        ? servicesInput.split(',').map(s => s.trim()).filter(Boolean)
+        : ['Layanan Umum'];
+
+      const finalImage = imageUrl.trim() || DEFAULT_IMAGES[type] || DEFAULT_IMAGES['Lainnya'];
+
+      const newUMKM = {
+        id: `inst-custom-${Date.now()}`,
+        name,
+        type,
+        address,
+        distance: distance || '0.1 km',
+        services: parsedServices,
+        image: finalImage
+      };
+
+      onAddSuccess(newUMKM);
+      onClose();
+    }, 1500);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[110] overflow-y-auto bg-slate-900/60 backdrop-blur-xl flex justify-center items-start sm:items-center p-4 sm:p-6"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 20 }}
+        className="w-full max-w-lg glass-card p-8 sm:p-10 flex flex-col relative border-white/80 rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] bg-white/70 my-auto shrink-0"
+      >
+        <button 
+          type="button"
+          onClick={onClose}
+          className="absolute top-6 right-6 p-2 bg-slate-900/5 hover:bg-slate-900/10 rounded-full text-slate-900 transition-all active:scale-90"
+        >
+          <X size={18} />
+        </button>
+
+        <div className="flex items-center gap-4 mb-6 text-left">
+          <div className="w-12 h-12 bg-sky-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-sky-500/20 shrink-0">
+            <Briefcase size={22} />
+          </div>
+          <div>
+            <h3 className="text-xl font-black text-slate-900 tracking-tight">Daftarkan UMKM Baru</h3>
+            <p className="text-xs text-slate-500 font-bold mt-0.5">Integrasikan bisnis Anda ke sistem Smart Queue</p>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="w-full space-y-4 text-left">
+          <div>
+            <label className="block text-[10px] font-black uppercase text-slate-700 tracking-wider mb-2">Nama Bisnis / UMKM</label>
+            <input 
+              required
+              type="text" 
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Contoh: Kopi Cantik Pangkalpinang" 
+              className="w-full h-12 px-5 bg-white/60 backdrop-blur-md rounded-[1rem] border border-white focus:outline-none focus:ring-4 focus:ring-sky-500/10 transition-all font-bold text-slate-900 shadow-sm placeholder:text-slate-400 text-sm"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[10px] font-black uppercase text-slate-700 tracking-wider mb-2">Kategori Bisnis</label>
+              <select
+                value={type}
+                onChange={(e) => setType(e.target.value)}
+                className="w-full h-12 px-5 bg-white/60 backdrop-blur-md rounded-[1rem] border border-white focus:outline-none focus:ring-4 focus:ring-sky-500/10 transition-all font-bold text-slate-900 shadow-sm text-sm"
+              >
+                <option value="Kuliner">Kuliner</option>
+                <option value="Kesehatan">Kesehatan</option>
+                <option value="Retail">Retail</option>
+                <option value="Perbankan">Perbankan</option>
+                <option value="Jasa">Jasa Layanan</option>
+                <option value="Lainnya">Lainnya</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-black uppercase text-slate-700 tracking-wider mb-2">Jarak Estimasi</label>
+              <input 
+                required
+                type="text" 
+                value={distance}
+                onChange={(e) => setDistance(e.target.value)}
+                placeholder="Contoh: 0.5 km" 
+                className="w-full h-12 px-5 bg-white/60 backdrop-blur-md rounded-[1rem] border border-white focus:outline-none focus:ring-4 focus:ring-sky-500/10 transition-all font-bold text-slate-900 shadow-sm placeholder:text-slate-400 text-sm"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-black uppercase text-slate-700 tracking-wider mb-2">Alamat Lengkap</label>
+            <textarea 
+              required
+              rows={2}
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="Contoh: Jl. Sudirman No 12, Pangkalpinang" 
+              className="w-full py-3 px-5 bg-white/60 backdrop-blur-md rounded-[1rem] border border-white focus:outline-none focus:ring-4 focus:ring-sky-500/10 transition-all font-bold text-slate-900 shadow-sm placeholder:text-slate-400 text-sm resize-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-black uppercase text-slate-700 tracking-wider mb-2">Layanan yang Ditawarkan</label>
+            <input 
+              required
+              type="text" 
+              value={servicesInput}
+              onChange={(e) => setServicesInput(e.target.value)}
+              placeholder="Pisahkan dengan koma (contoh: Dine In, Take Away, Delivery)" 
+              className="w-full h-12 px-5 bg-white/60 backdrop-blur-md rounded-[1rem] border border-white focus:outline-none focus:ring-4 focus:ring-sky-500/10 transition-all font-bold text-slate-900 shadow-sm placeholder:text-slate-400 text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-black uppercase text-slate-700 tracking-wider mb-2">URL Foto UMKM (Opsional)</label>
+            <input 
+              type="url" 
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              placeholder="https://example.com/foto.jpg" 
+              className="w-full h-12 px-5 bg-white/60 backdrop-blur-md rounded-[1rem] border border-white focus:outline-none focus:ring-4 focus:ring-sky-500/10 transition-all font-bold text-slate-900 shadow-sm placeholder:text-slate-400 text-sm"
+            />
+            <span className="text-[9px] text-slate-400 font-bold block mt-1">
+              Biarkan kosong untuk menggunakan foto ilustrasi premium otomatis dari kategori produk Anda.
+            </span>
+          </div>
+
+          <button 
+            disabled={isLoading}
+            type="submit"
+            className="w-full h-14 bg-slate-900 text-white rounded-[1.2rem] font-black text-xs uppercase tracking-widest shadow-2xl shadow-slate-900/20 active:scale-95 transition-all mt-6 flex items-center justify-center border border-white/20"
+          >
+            {isLoading ? (
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              'Daftarkan Bisnis Sekarang'
+            )}
+          </button>
+        </form>
       </motion.div>
     </motion.div>
   );
