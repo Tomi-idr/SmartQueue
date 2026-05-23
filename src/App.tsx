@@ -467,6 +467,7 @@ export default function App() {
   const [isSubscribedWarningOpen, setIsSubscribedWarningOpen] = useState(false);
   const [subscriptionWarningTitle, setSubscriptionWarningTitle] = useState("Berlangganan Diperlukan");
   const [subscriptionWarningDesc, setSubscriptionWarningDesc] = useState("Fitur pengambilan nomor antrean hanya tersedia bagi pengguna yang berlangganan paket premium aktif. Hadirkan kepuasan pelanggan terbaik sekarang.");
+  const [subscriptionWarningLoginText, setSubscriptionWarningLoginText] = useState("Login & Berlangganan");
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [isVideoOpen, setIsVideoOpen] = useState(false);
@@ -555,8 +556,10 @@ export default function App() {
                   if (isLoggedIn) {
                     setIsAddUMKMOpen(true);
                   } else {
-                    alert('Silakan login terlebih dahulu untuk mendaftarkan UMKM Anda.');
-                    setIsLoginOpen(true);
+                    setSubscriptionWarningTitle("Login Diperlukan");
+                    setSubscriptionWarningDesc("Silakan login terlebih dahulu untuk mendaftarkan dan meluncurkan bisnis UMKM baru Anda ke sistem Smart Queue.");
+                    setSubscriptionWarningLoginText("Login Sekarang");
+                    setIsSubscribedWarningOpen(true);
                   }
                 }}
                 className="w-full md:w-auto px-8 py-4 bg-slate-900 hover:bg-sky-600 font-black text-xs uppercase tracking-widest text-white rounded-2xl shadow-xl transition-all active:scale-95 shrink-0 btn-apple flex items-center justify-center gap-3"
@@ -1193,6 +1196,7 @@ export default function App() {
             }}
             title={subscriptionWarningTitle}
             description={subscriptionWarningDesc}
+            loginText={subscriptionWarningLoginText}
           />
         )}
       </AnimatePresence>
@@ -1398,7 +1402,8 @@ const SubscriptionWarningModal = ({
   onOpenLogin, 
   onGoToPricing,
   title = "Berlangganan Diperlukan",
-  description = "Fitur pengambilan nomor antrean hanya tersedia bagi pengguna yang berlangganan paket premium aktif. Hadirkan kepuasan pelanggan terbaik sekarang."
+  description = "Fitur pengambilan nomor antrean hanya tersedia bagi pengguna yang berlangganan paket premium aktif. Hadirkan kepuasan pelanggan terbaik sekarang.",
+  loginText = "Login & Berlangganan"
 }: { 
   isOpen: boolean, 
   onClose: () => void, 
@@ -1406,7 +1411,8 @@ const SubscriptionWarningModal = ({
   onOpenLogin: () => void, 
   onGoToPricing: () => void,
   title?: string,
-  description?: string
+  description?: string,
+  loginText?: string
 }) => {
   return (
     <motion.div
@@ -1464,7 +1470,7 @@ const SubscriptionWarningModal = ({
               }}
               className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-slate-900/20 active:scale-95 transition-all"
             >
-              Login & Berlangganan
+              {loginText}
             </button>
           )}
           
