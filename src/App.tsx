@@ -152,6 +152,8 @@ const PLANS = [
     id: 'starter', 
     name: 'Starter', 
     price: 'Rp 20.000', 
+    displayPrice: 'Rp 20k',
+    interval: 'bln',
     rawPrice: 20000,
     features: ['1 Loket Aktif', '100 Antrean / Hari', 'Support Email'],
     highlight: false
@@ -160,18 +162,42 @@ const PLANS = [
     id: 'pro', 
     name: 'Pro Business', 
     price: 'Rp 50.000', 
+    displayPrice: 'Rp 50k',
+    interval: 'bln',
     rawPrice: 50000,
     features: ['5 Loket Aktif', 'Antrean Tanpa Batas', 'Support 24/7', 'Custom Branding'],
-    highlight: true
+    highlight: false
   },
   { 
     id: 'enterprise', 
     name: 'Enterprise', 
     price: 'Rp 100.000', 
+    displayPrice: 'Rp 100k',
+    interval: 'bln',
     rawPrice: 100000,
     features: ['Unlimited Loket', 'Support Prioritas', 'API Access', 'Dedicated Manager'],
     highlight: false
   },
+  { 
+    id: 'umkm-monthly', 
+    name: 'Mitra UMKM Bulanan', 
+    price: 'Rp 200.000', 
+    displayPrice: 'Rp 200k',
+    interval: 'bln',
+    rawPrice: 200000,
+    features: ['Daftar 1 UMKM ke Web', 'Sistem Antrean Premium', 'Prioritas Promosi Web', 'Support WA Bisnis 24/7'],
+    highlight: false
+  },
+  { 
+    id: 'umkm-yearly', 
+    name: 'Mitra UMKM Tahunan', 
+    price: 'Rp 2.000.000', 
+    displayPrice: 'Rp 2M',
+    interval: 'thn',
+    rawPrice: 2000000,
+    features: ['Daftar 5 UMKM ke Web', 'Sistem Antrean Premium', 'Prioritas Promosi Web', 'Support WA Bisnis 24/7', 'Hemat Rp 400.000/tahun!'],
+    highlight: true
+  }
 ];
 
 // --- Sub-components ---
@@ -439,6 +465,8 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isSubscribedWarningOpen, setIsSubscribedWarningOpen] = useState(false);
+  const [subscriptionWarningTitle, setSubscriptionWarningTitle] = useState("Berlangganan Diperlukan");
+  const [subscriptionWarningDesc, setSubscriptionWarningDesc] = useState("Fitur pengambilan nomor antrean hanya tersedia bagi pengguna yang berlangganan paket premium aktif. Hadirkan kepuasan pelanggan terbaik sekarang.");
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [isVideoOpen, setIsVideoOpen] = useState(false);
@@ -597,6 +625,8 @@ export default function App() {
                       onClick={(e) => {
                         e.stopPropagation();
                         if (!isSubscribed) {
+                          setSubscriptionWarningTitle("Berlangganan Diperlukan");
+                          setSubscriptionWarningDesc("Fitur pengambilan nomor antrean hanya tersedia bagi pengguna yang berlangganan paket premium aktif. Hadirkan kepuasan pelanggan terbaik sekarang.");
                           setIsSubscribedWarningOpen(true);
                           return;
                         }
@@ -640,6 +670,8 @@ export default function App() {
                         whileTap={{ scale: 0.98 }}
                         onClick={() => {
                           if (!isSubscribed) {
+                            setSubscriptionWarningTitle("Berlangganan Diperlukan");
+                            setSubscriptionWarningDesc("Fitur pengambilan nomor antrean hanya tersedia bagi pengguna yang berlangganan paket premium aktif. Hadirkan kepuasan pelanggan terbaik sekarang.");
                             setIsSubscribedWarningOpen(true);
                             return;
                           }
@@ -671,64 +703,148 @@ export default function App() {
             <p className="text-slate-500 font-medium text-xl leading-relaxed">Pengelolaan antrean profesional dengan sentuhan teknologi modern.</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-10">
-            {PLANS.map((plan) => (
-              <GlassCard 
-                key={plan.id}
-                className={cn(
-                  "p-10 flex flex-col items-center relative overflow-hidden group transition-all duration-700",
-                  plan.highlight 
-                    ? "border-white/80 ring-2 ring-sky-500/20 bg-white/40 shadow-2xl shadow-sky-500/10" 
-                    : "border-white/60 shadow-none hover:shadow-2xl"
-                )} 
-                hover
-              >
-                {plan.highlight && (
-                  <div className="absolute top-0 right-0 bg-sky-500 text-white px-6 py-2 text-[10px] font-black uppercase tracking-[0.2em] rounded-bl-3xl">
-                    Terpopuler
-                  </div>
-                )}
-                <h4 className={cn(
-                  "text-sm font-black uppercase tracking-[0.2em] mb-6",
-                  plan.highlight ? "text-sky-600" : "text-slate-400"
-                )}>
-                  {plan.name}
-                </h4>
-                <div className="flex items-baseline gap-1 mb-10">
-                  <span className="text-5xl lg:text-6xl font-black text-slate-900 tracking-tighter">{plan.price.replace('.000', 'k')}</span>
-                  <span className="text-slate-400 text-sm font-bold">/ bln</span>
-                </div>
-                <ul className="space-y-6 mb-12 w-full">
-                  {plan.features.map((feature) => (
-                    <li key={feature} className={cn(
-                        "flex items-center gap-4 text-sm font-bold",
-                        plan.highlight ? "text-slate-800" : "text-slate-600"
-                      )}>
-                      <CheckCircle2 size={20} className="text-sky-500 shrink-0" /> {feature}
-                    </li>
-                  ))}
-                </ul>
-                <button 
-                  onClick={() => {
-                    if (isLoggedIn) {
-                      setSelectedPlan(plan);
-                      setIsPaymentOpen(true);
-                    } else {
-                      setPendingPlanAfterLogin(plan);
-                      setIsLoginOpen(true);
-                    }
-                  }}
+          {/* Langganan Pengguna / Loket Antrean */}
+          <div className="space-y-10">
+            <div className="flex items-center gap-4 max-w-6xl mx-auto">
+              <div className="h-[2px] bg-gradient-to-r from-transparent to-sky-500/40 flex-1"></div>
+              <h3 className="text-xs sm:text-sm font-black uppercase tracking-[0.3em] text-sky-600 px-6 py-2.5 bg-sky-500/5 rounded-full border border-sky-500/10 flex items-center gap-2">
+                <Users size={16} /> Paket Antrean & Loket Pengguna
+              </h3>
+              <div className="h-[2px] bg-gradient-to-l from-transparent to-sky-500/40 flex-1"></div>
+            </div>
+            <p className="text-center text-slate-500 text-sm font-bold -mt-4 mb-4">Cocok untuk penambahan kuota loket aktif terintegrasi dan kapasitas manajemen antrean harian.</p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto justify-center">
+              {PLANS.filter(plan => !plan.id.startsWith('umkm')).map((plan) => (
+                <GlassCard 
+                  key={plan.id}
                   className={cn(
-                    "w-full py-5 rounded-[24px] font-black text-xs uppercase tracking-widest btn-apple mt-auto",
+                    "p-10 flex flex-col items-center relative overflow-hidden group transition-all duration-700",
                     plan.highlight 
-                      ? "bg-sky-600 text-white shadow-2xl shadow-sky-600/30" 
-                      : "bg-slate-900 text-white shadow-2xl shadow-slate-900/20"
-                  )}
+                      ? "border-white/80 ring-2 ring-sky-500/20 bg-white/40 shadow-2xl shadow-sky-500/10" 
+                      : "border-white/60 shadow-none hover:shadow-2xl"
+                  )} 
+                  hover
                 >
-                  Mulai Berlangganan
-                </button>
-              </GlassCard>
-            ))}
+                  {plan.highlight && (
+                    <div className="absolute top-0 right-0 bg-sky-500 text-white px-6 py-2 text-[10px] font-black uppercase tracking-[0.2em] rounded-bl-3xl">
+                      Terpopuler
+                    </div>
+                  )}
+                  <h4 className={cn(
+                    "text-sm font-black uppercase tracking-[0.2em] mb-6",
+                    plan.highlight ? "text-sky-600" : "text-slate-400"
+                  )}>
+                    {plan.name}
+                  </h4>
+                  <div className="flex items-baseline gap-1 mb-10">
+                    <span className="text-5xl lg:text-6xl font-black text-slate-900 tracking-tighter">{plan.displayPrice || plan.price}</span>
+                    <span className="text-slate-400 text-sm font-bold">/ {plan.interval || 'bln'}</span>
+                  </div>
+                  <ul className="space-y-6 mb-12 w-full">
+                    {plan.features.map((feature) => (
+                      <li key={feature} className={cn(
+                          "flex items-center gap-4 text-sm font-bold",
+                          plan.highlight ? "text-slate-800" : "text-slate-600"
+                        )}>
+                        <CheckCircle2 size={20} className="text-sky-500 shrink-0" /> {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <button 
+                    onClick={() => {
+                      if (isLoggedIn) {
+                        setSelectedPlan(plan);
+                        setIsPaymentOpen(true);
+                      } else {
+                        setPendingPlanAfterLogin(plan);
+                        setIsLoginOpen(true);
+                      }
+                    }}
+                    className={cn(
+                      "w-full py-5 rounded-[24px] font-black text-xs uppercase tracking-widest btn-apple mt-auto",
+                      plan.highlight 
+                        ? "bg-sky-600 text-white shadow-2xl shadow-sky-600/30" 
+                        : "bg-slate-900 text-white shadow-2xl shadow-slate-900/20"
+                    )}
+                  >
+                    Mulai Berlangganan
+                  </button>
+                </GlassCard>
+              ))}
+            </div>
+          </div>
+
+          {/* Langganan UMKM / Mitra Bisnis */}
+          <div className="space-y-10 pt-16 border-t border-slate-200/60">
+            <div className="flex items-center gap-4 max-w-6xl mx-auto">
+              <div className="h-[2px] bg-gradient-to-r from-transparent to-emerald-500/40 flex-1"></div>
+              <h3 className="text-xs sm:text-sm font-black uppercase tracking-[0.3em] text-emerald-600 px-6 py-2.5 bg-emerald-500/5 rounded-full border border-emerald-500/10 flex items-center gap-2">
+                <Briefcase size={16} /> Paket Kemitraan UMKM (Daftar ke Web)
+              </h3>
+              <div className="h-[2px] bg-gradient-to-l from-transparent to-emerald-500/40 flex-1"></div>
+            </div>
+            <p className="text-center text-slate-500 text-sm font-bold -mt-4 mb-4">Layanan eksklusif agar bisnis UMKM Anda muncul di daftar halaman utama web dengan integrasi sistem antrean premium penuh.</p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto justify-center">
+              {PLANS.filter(plan => plan.id.startsWith('umkm')).map((plan) => (
+                <GlassCard 
+                  key={plan.id}
+                  className={cn(
+                    "p-10 flex flex-col items-center relative overflow-hidden group transition-all duration-700",
+                    plan.highlight 
+                      ? "border-emerald-500/80 ring-2 ring-emerald-500/20 bg-white/40 shadow-2xl shadow-emerald-500/10" 
+                      : "border-white/60 shadow-none hover:shadow-2xl"
+                  )} 
+                  hover
+                >
+                  {plan.highlight && (
+                    <div className="absolute top-0 right-0 bg-emerald-500 text-white px-6 py-2 text-[10px] font-black uppercase tracking-[0.2em] rounded-bl-3xl">
+                      Paling Hemat
+                    </div>
+                  )}
+                  <h4 className={cn(
+                    "text-sm font-black uppercase tracking-[0.2em] mb-6",
+                    plan.highlight ? "text-emerald-600" : "text-slate-400"
+                  )}>
+                    {plan.name}
+                  </h4>
+                  <div className="flex items-baseline gap-1 mb-10">
+                    <span className="text-5xl lg:text-6xl font-black text-slate-900 tracking-tighter">{plan.displayPrice || plan.price}</span>
+                    <span className="text-slate-400 text-sm font-bold">/ {plan.interval || 'bln'}</span>
+                  </div>
+                  <ul className="space-y-6 mb-12 w-full">
+                    {plan.features.map((feature) => (
+                      <li key={feature} className={cn(
+                          "flex items-center gap-4 text-sm font-bold",
+                          plan.highlight ? "text-slate-800" : "text-slate-600"
+                        )}>
+                        <CheckCircle2 size={20} className="text-emerald-500 shrink-0" /> {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <button 
+                    onClick={() => {
+                      if (isLoggedIn) {
+                        setSelectedPlan(plan);
+                        setIsPaymentOpen(true);
+                      } else {
+                        setPendingPlanAfterLogin(plan);
+                        setIsLoginOpen(true);
+                      }
+                    }}
+                    className={cn(
+                      "w-full py-5 rounded-[24px] font-black text-xs uppercase tracking-widest btn-apple mt-auto",
+                      plan.highlight 
+                        ? "bg-emerald-600 text-white shadow-2xl shadow-emerald-600/30 font-bold" 
+                        : "bg-slate-900 text-white shadow-2xl shadow-slate-900/20 font-bold"
+                    )}
+                  >
+                    Daftar Kemitraan
+                  </button>
+                </GlassCard>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -829,6 +945,8 @@ export default function App() {
                         key={item.id}
                         onClick={() => {
                           if (!isSubscribed) {
+                            setSubscriptionWarningTitle("Berlangganan Diperlukan");
+                            setSubscriptionWarningDesc("Fitur pengambilan nomor antrean hanya tersedia bagi pengguna yang berlangganan paket premium aktif. Hadirkan kepuasan pelanggan terbaik sekarang.");
                             setIsSubscribedWarningOpen(true);
                             return;
                           }
@@ -1073,6 +1191,8 @@ export default function App() {
               const el = document.getElementById('pricing');
               if (el) el.scrollIntoView({ behavior: 'smooth' });
             }}
+            title={subscriptionWarningTitle}
+            description={subscriptionWarningDesc}
           />
         )}
       </AnimatePresence>
@@ -1082,6 +1202,13 @@ export default function App() {
           <AddUMKMModal
             isOpen={isAddUMKMOpen}
             onClose={() => setIsAddUMKMOpen(false)}
+            isSubscribed={isSubscribed}
+            onRequiredSubscription={() => {
+              setIsAddUMKMOpen(false);
+              setSubscriptionWarningTitle("Kemitraan UMKM Premium");
+              setSubscriptionWarningDesc("Untuk mendaftarkan bisnis UMKM Anda ke dalam Smart Queue Web, Anda harus bergabung dengan paket keanggotaan Mitra UMKM Premium aktif (Mulai Rp 200.000 / Bulan) terlebih dahulu.");
+              setIsSubscribedWarningOpen(true);
+            }}
             onAddSuccess={(newUMKM) => {
               setInstitutions([newUMKM, ...institutions]);
               // Option text: Successfully added
@@ -1269,13 +1396,17 @@ const SubscriptionWarningModal = ({
   onClose, 
   isLoggedIn, 
   onOpenLogin, 
-  onGoToPricing 
+  onGoToPricing,
+  title = "Berlangganan Diperlukan",
+  description = "Fitur pengambilan nomor antrean hanya tersedia bagi pengguna yang berlangganan paket premium aktif. Hadirkan kepuasan pelanggan terbaik sekarang."
 }: { 
   isOpen: boolean, 
   onClose: () => void, 
   isLoggedIn: boolean, 
   onOpenLogin: () => void, 
-  onGoToPricing: () => void 
+  onGoToPricing: () => void,
+  title?: string,
+  description?: string
 }) => {
   return (
     <motion.div
@@ -1307,11 +1438,11 @@ const SubscriptionWarningModal = ({
         </div>
 
         <h3 className="text-2xl font-black text-slate-900 mb-3 tracking-tight">
-          Berlangganan Diperlukan
+          {title}
         </h3>
         
         <p className="text-slate-500 font-bold text-sm leading-relaxed mb-8">
-          Fitur pengambilan nomor antrean hanya tersedia bagi pengguna yang berlangganan paket premium aktif. Hadirkan kepuasan pelanggan terbaik sekarang.
+          {description}
         </p>
 
         <div className="flex flex-col gap-3 w-full">
@@ -1349,7 +1480,19 @@ const SubscriptionWarningModal = ({
   );
 };
 
-const AddUMKMModal = ({ isOpen, onClose, onAddSuccess }: { isOpen: boolean, onClose: () => void, onAddSuccess: (newUMKM: any) => void }) => {
+const AddUMKMModal = ({ 
+  isOpen, 
+  onClose, 
+  onAddSuccess,
+  isSubscribed,
+  onRequiredSubscription
+}: { 
+  isOpen: boolean, 
+  onClose: () => void, 
+  onAddSuccess: (newUMKM: any) => void,
+  isSubscribed: boolean,
+  onRequiredSubscription: () => void
+}) => {
   const [name, setName] = useState('');
   const [type, setType] = useState('Kuliner');
   const [address, setAddress] = useState('');
@@ -1369,6 +1512,10 @@ const AddUMKMModal = ({ isOpen, onClose, onAddSuccess }: { isOpen: boolean, onCl
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isSubscribed) {
+      onRequiredSubscription();
+      return;
+    }
     setIsLoading(true);
 
     setTimeout(() => {
